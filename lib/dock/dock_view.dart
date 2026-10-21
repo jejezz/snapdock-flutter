@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../capture/capture_controller.dart';
+import '../capture/capture_service.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import 'capture_thumb.dart';
@@ -84,6 +85,18 @@ class _DockViewState extends State<DockView> {
                           ),
                         ),
                       ),
+                    ),
+                    _DockButton(
+                      icon: Icons.photo_library_outlined,
+                      label: l10n.openPicturesFolder,
+                      onHint: _setHint,
+                      onPressed: () => controller.openSaveFolder(SaveFolder.pictures),
+                    ),
+                    _DockButton(
+                      icon: Icons.video_library_outlined,
+                      label: l10n.openMoviesFolder,
+                      onHint: _setHint,
+                      onPressed: () => controller.openSaveFolder(SaveFolder.movies),
                     ),
                     _DockButton(
                       icon: Icons.photo_size_select_large_rounded,

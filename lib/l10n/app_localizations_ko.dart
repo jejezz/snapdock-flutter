@@ -232,4 +232,13 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get thumbSave => '저장';
+
+  @override
+  String get openPicturesFolder => '사진 폴더 열기';
+
+  @override
+  String get openMoviesFolder => '동영상 폴더 열기';
+
+  @override
+  String get openFolderTooltip => '저장 폴더 열기';
 }

@@ -154,5 +154,8 @@
   "dockSizeTooltip": "썸네일 크기",
   "dockCaptureTooltip": "캡처",
   "dockClearTooltip": "모두 지우기",
-  "thumbSave": "저장"
+  "thumbSave": "저장",
+  "openPicturesFolder": "사진 폴더 열기",
+  "openMoviesFolder": "동영상 폴더 열기",
+  "openFolderTooltip": "저장 폴더 열기"
 }

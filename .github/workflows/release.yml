@@ -314,85 +314,11 @@ jobs:
           path: dist/*-windows-x64-setup.exe
           if-no-files-found: error
 
-  build-linux:
-    needs: check
-    runs-on: ubuntu-latest
-    env:
-      FILE_NAME: ${{ needs.check.outputs.file_name }}
-      VERSION: ${{ needs.check.outputs.version }}
-      DISPLAY_NAME: ${{ needs.check.outputs.display_name }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
-
-      # Standard toolchain flutter doctor recommends for Linux desktop
-      # builds. Add any extra apt packages your plugins need alongside these.
-      - name: Install native build tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
-
-      - run: flutter pub get
-
-      - run: flutter build linux --release --dart-define=APP_VERSION=${{ env.VERSION }}
-
-      # conventions/packaging.md §4: the bundle plus an icon, a .desktop
-      # entry and linux/install.sh, which puts the app under ~/.local so it
-      # shows up in the desktop's app launcher.
-      - name: Package tarball
-        run: |
-          BINARY_NAME=$(grep -oE 'set\(BINARY_NAME "[^"]+"\)' linux/CMakeLists.txt | sed -E 's/.*"(.*)".*/\1/')
-          APP_ID=$(grep -oE 'set\(APPLICATION_ID "[^"]+"\)' linux/CMakeLists.txt | sed -E 's/.*"(.*)".*/\1/')
-          test -n "$BINARY_NAME"
-          test -n "$APP_ID"
-          case "$APP_ID" in com.example.*) echo "::error::linux/CMakeLists.txt APPLICATION_ID is still $APP_ID (conventions/identity.md §3)"; exit 1 ;; esac
-
-          # 512px, written by common/tool/icon/generate_icons.py.
-          ICON=linux/runner/resources/app_icon.png
-          test -f "$ICON" || { echo "::error::$ICON missing — run tool/icon/generate_icons.py"; exit 1; }
-
-          STAGE_DIR="$FILE_NAME"
-          rm -rf "$STAGE_DIR"
-          cp -r build/linux/x64/release/bundle "$STAGE_DIR"
-
-          mkdir -p "$STAGE_DIR/share/icons/hicolor/512x512/apps" "$STAGE_DIR/share/applications"
-          cp "$ICON" "$STAGE_DIR/share/icons/hicolor/512x512/apps/$APP_ID.png"
-
-          # The .desktop file's name must equal APPLICATION_ID so GNOME ties
-          # the running window to it (StartupWMClass).
-          cat > "$STAGE_DIR/share/applications/$APP_ID.desktop" <<EOF
-          [Desktop Entry]
-          Type=Application
-          Name=$DISPLAY_NAME
-          Exec="@INSTALL_DIR@/$BINARY_NAME"
-          Icon=$APP_ID
-          StartupWMClass=$APP_ID
-          Terminal=false
-          Categories=Utility;
-          EOF
-          sed -i 's/^[[:space:]]*//' "$STAGE_DIR/share/applications/$APP_ID.desktop"
-
-          sed -e "s|@FILE_NAME@|$FILE_NAME|g" -e "s|@APP_ID@|$APP_ID|g" \
-            linux/install.sh > "$STAGE_DIR/install.sh"
-          chmod +x "$STAGE_DIR/install.sh"
-
-          tar czf "${FILE_NAME}-${VERSION}-linux-x64.tar.gz" "$STAGE_DIR"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: linux-tarball
-          path: "*-linux-x64.tar.gz"
-          if-no-files-found: error
-
   release:
     # Tag pushes only — a manual run is a build check (conventions/tagging.md §3).
     if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
-    needs: [check, build-macos, build-windows, build-linux]
+    needs: [check, build-macos, build-windows]
     permissions:
       contents: write
     steps:

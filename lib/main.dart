@@ -247,6 +247,15 @@ class _HomeScreenState extends State<HomeScreen> {
         flexibleSpace: const FocusTint(),
         title: const Text(AppIdentity.displayName),
         actions: [
+          PopupMenuButton<SaveFolder>(
+            tooltip: l10n.openFolderTooltip,
+            icon: const Icon(Icons.folder_open_rounded),
+            onSelected: _captures.openSaveFolder,
+            itemBuilder: (_) => [
+              PopupMenuItem(value: SaveFolder.pictures, child: Text(l10n.openPicturesFolder)),
+              PopupMenuItem(value: SaveFolder.movies, child: Text(l10n.openMoviesFolder)),
+            ],
+          ),
           IconButton(
             tooltip: l10n.dockShrinkTooltip,
             icon: const Icon(Icons.close_fullscreen_rounded),

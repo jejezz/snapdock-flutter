@@ -137,5 +137,8 @@
   "dockSizeTooltip": "Thumbnail size",
   "dockCaptureTooltip": "Capture",
   "dockClearTooltip": "Clear all",
-  "thumbSave": "Save"
+  "thumbSave": "Save",
+  "openPicturesFolder": "Open Pictures folder",
+  "openMoviesFolder": "Open Movies folder",
+  "openFolderTooltip": "Open save folder"
 }

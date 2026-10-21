@@ -493,6 +493,24 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'저장'**
   String get thumbSave;
+
+  /// No description provided for @openPicturesFolder.
+  ///
+  /// In ko, this message translates to:
+  /// **'사진 폴더 열기'**
+  String get openPicturesFolder;
+
+  /// No description provided for @openMoviesFolder.
+  ///
+  /// In ko, this message translates to:
+  /// **'동영상 폴더 열기'**
+  String get openMoviesFolder;
+
+  /// No description provided for @openFolderTooltip.
+  ///
+  /// In ko, this message translates to:
+  /// **'저장 폴더 열기'**
+  String get openFolderTooltip;
 }
 
 class _AppLocalizationsDelegate

@@ -26,7 +26,7 @@ abstract final class DockWindow {
   static Size sizeFor({required int count, required DockSize size}) {
     const visibleMax = 8;
     final shown = count.clamp(0, visibleMax);
-    const chrome = 12.0 + 20 + 6 + 28 * 3 + 6; // 안쪽 여백 + 손잡이 + 단추 3개
+    const chrome = 12.0 + 20 + 6 + 28 * 5 + 6; // 안쪽 여백 + 손잡이 + 단추 5개
     final thumbs = shown * (size.width + 6);
     return Size(
       (chrome + thumbs).clamp(180, 900),

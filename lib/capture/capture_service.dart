@@ -8,6 +8,9 @@ enum CaptureAction { copy, save }
 /// 캡처의 종류. 영상과 GIF는 [CaptureItem.filePath]에 파일이 있다.
 enum CaptureKind { image, video, gif }
 
+/// 저장 폴더: 이미지와 GIF는 사진, 영상은 동영상 아래 `Snapdock`.
+enum SaveFolder { pictures, movies }
+
 /// 독에 쌓이는 캡처 한 건. 항목마다 따로 보관한다.
 @immutable
 class CaptureItem {
@@ -70,6 +73,8 @@ class CaptureService {
 
   Future<String?> saveFile(String path) =>
       _channel.invokeMethod<String>('saveFile', {'path': path});
+
+  Future<void> openSaveFolder(SaveFolder folder) => _channel.invokeMethod<void>('openFolder', {'kind': folder.name});
 
   /// 녹화 중이면 일찍 끝낸다. 아니면 아무 일도 없다.
   Future<void> stopRecording() => _channel.invokeMethod<void>('stopRecording');

@@ -39,6 +39,8 @@ class CaptureController extends ChangeNotifier {
     await refreshPermission();
   }
 
+  Future<void> openSaveFolder(SaveFolder folder) => _service.openSaveFolder(folder);
+
   Future<void> openPermissionSettings() => _service.openPermissionSettings();
 
   /// 단축키나 단추에서 부른다. 이미 선택 중이면 무시한다.

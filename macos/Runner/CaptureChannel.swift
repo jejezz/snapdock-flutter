@@ -35,6 +35,10 @@ enum CaptureChannel {
       case "stopRecording":
         Task { @MainActor in RecordingSession.stopCurrent() }
         result(nil)
+      case "openFolder":
+        let kind = (call.arguments as? [String: Any])?["kind"] as? String
+        openSaveFolder(movies: kind == "movies")
+        result(nil)
       case "copyFile":
         guard let path = (call.arguments as? [String: Any])?["path"] as? String else {
           result(FlutterError(code: "bad_args", message: "path is required", details: nil))
@@ -105,6 +109,15 @@ enum CaptureChannel {
     let pb = NSPasteboard.general
     pb.clearContents()
     pb.setData(png, forType: .png)
+  }
+
+  /// ~/Pictures/Snapdock 또는 ~/Movies/Snapdock을 Finder로 연다. 아직 없으면 만든다.
+  private static func openSaveFolder(movies: Bool) {
+    let base: FileManager.SearchPathDirectory = movies ? .moviesDirectory : .picturesDirectory
+    guard let root = FileManager.default.urls(for: base, in: .userDomainMask).first else { return }
+    let folder = root.appendingPathComponent("Snapdock", isDirectory: true)
+    try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    NSWorkspace.shared.open(folder)
   }
 
   /// 영상·GIF는 파일 자체를 클립보드에 올린다. Finder나 메신저에 붙여 넣으면 파일로 들어간다.

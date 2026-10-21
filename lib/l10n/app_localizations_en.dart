@@ -235,4 +235,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get thumbSave => 'Save';
+
+  @override
+  String get openPicturesFolder => 'Open Pictures folder';
+
+  @override
+  String get openMoviesFolder => 'Open Movies folder';
+
+  @override
+  String get openFolderTooltip => 'Open save folder';
 }
