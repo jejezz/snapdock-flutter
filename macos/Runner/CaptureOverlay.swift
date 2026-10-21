@@ -579,7 +579,7 @@ private final class OverlayView: NSView {
       onFinish?(nil)
       return
     }
-    onFinish?(.image(CaptureOutcome(action: .copy, shape: .screen, png: png, width: image.width, height: image.height)))
+    finishWithFlash(.image(CaptureOutcome(action: .copy, shape: .screen, png: png, width: image.width, height: image.height)), region: bounds)
   }
 
   private func setShape(_ s: CaptureShape) {
@@ -598,6 +598,29 @@ private final class OverlayView: NSView {
   }
 
   // MARK: 결과
+
+  /// 찍힌 영역이 0.16초 하얗게 번쩍인 뒤 오버레이를 닫는다. 저장됐다는 걸 알리는 신호다.
+  private func finishWithFlash(_ result: OverlayResult, region: NSRect) {
+    hideToolbar()
+    let flash = NSView(frame: region)
+    flash.wantsLayer = true
+    flash.layer?.backgroundColor = NSColor.white.cgColor
+    if shape == .circle, locked == nil, region != bounds {
+      flash.layer?.cornerRadius = min(region.width, region.height) / 2
+    }
+    addSubview(flash)
+
+    CATransaction.begin()
+    CATransaction.setCompletionBlock { [weak self] in self?.onFinish?(result) }
+    let fade = CABasicAnimation(keyPath: "opacity")
+    fade.fromValue = 0.85
+    fade.toValue = 0
+    fade.duration = 0.16
+    fade.timingFunction = CAMediaTimingFunction(name: .easeOut)
+    flash.layer?.opacity = 0
+    flash.layer?.add(fade, forKey: "flash")
+    CATransaction.commit()
+  }
 
   /// 고른 영역(원형이어도 둘러싼 사각형)이나 고정한 창을 녹화하라고 넘긴다.
   private func startRecording(_ kind: RecordingKind) {
@@ -623,7 +646,7 @@ private final class OverlayView: NSView {
       return
     }
     let (w, h) = pixelSize(of: r)
-    onFinish?(.image(CaptureOutcome(action: action, shape: shape, png: png, width: w, height: h)))
+    finishWithFlash(.image(CaptureOutcome(action: action, shape: shape, png: png, width: w, height: h)), region: r)
   }
 
   /// 창 하나를 가려진 부분까지 포함해 그 창만 찍는다 (그림자는 뺀다).
@@ -643,7 +666,7 @@ private final class OverlayView: NSView {
           onFinish?(nil)
           return
         }
-        onFinish?(.image(CaptureOutcome(action: action, shape: .window, png: png, width: shot.width, height: shot.height)))
+        finishWithFlash(.image(CaptureOutcome(action: action, shape: .window, png: png, width: shot.width, height: shot.height)), region: target.rect)
       } catch {
         onFinish?(nil)
       }

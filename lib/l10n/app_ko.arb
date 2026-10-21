@@ -177,5 +177,7 @@
         "type": "int"
       }
     }
-  }
+  },
+  "dockCollapseTooltip": "접기",
+  "dockPillTooltip": "독 펼치기"
 }

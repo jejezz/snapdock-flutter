@@ -16,12 +16,18 @@ class DockView extends StatefulWidget {
     required this.size,
     required this.onSizeChanged,
     required this.onExpand,
+    required this.collapsed,
+    required this.onToggleCollapsed,
   });
 
   final CaptureController controller;
   final DockSize size;
   final VoidCallback onSizeChanged;
   final VoidCallback onExpand;
+
+  /// 알약 모양으로 접은 상태.
+  final bool collapsed;
+  final VoidCallback onToggleCollapsed;
 
   @override
   State<DockView> createState() => _DockViewState();
@@ -46,6 +52,7 @@ class _DockViewState extends State<DockView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
+    if (widget.collapsed) return _buildPill(context);
     return Scaffold(
       backgroundColor: scheme.surface,
       body: ListenableBuilder(
@@ -77,11 +84,15 @@ class _DockViewState extends State<DockView> {
                         separatorBuilder: (_, _) => const SizedBox(width: 6),
                         itemBuilder: (context, i) => Align(
                           alignment: Alignment.center,
-                          child: CaptureThumb(
-                            controller: controller,
+                          child: CaptureEntrance(
+                            key: ValueKey(controller.items[i].id),
                             item: controller.items[i],
-                            width: size.width,
-                            onHint: _setHint,
+                            child: CaptureThumb(
+                              controller: controller,
+                              item: controller.items[i],
+                              width: size.width,
+                              onHint: _setHint,
+                            ),
                           ),
                         ),
                       ),
@@ -111,6 +122,12 @@ class _DockViewState extends State<DockView> {
                       onPressed: controller.busy ? null : controller.capture,
                     ),
                     _DockButton(
+                      icon: Icons.chevron_right_rounded,
+                      label: l10n.dockCollapseTooltip,
+                      onHint: _setHint,
+                      onPressed: widget.onToggleCollapsed,
+                    ),
+                    _DockButton(
                       icon: Icons.open_in_full_rounded,
                       label: l10n.dockExpandTooltip,
                       onHint: _setHint,
@@ -136,6 +153,53 @@ class _DockViewState extends State<DockView> {
                           color: scheme.onSurfaceVariant,
                         ),
                       ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+extension on _DockViewState {
+  /// 접은 독: 손잡이, 카메라, 개수, 펼치기 화살표만 남는 알약. 어디를 눌러도 펼친다.
+  Widget _buildPill(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    return Scaffold(
+      backgroundColor: scheme.surface,
+      body: ListenableBuilder(
+        listenable: controller,
+        builder: (context, _) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          child: Row(
+            children: [
+              DragToMoveArea(
+                child: SizedBox(
+                  width: 20,
+                  height: double.infinity,
+                  child: Icon(Icons.drag_indicator_rounded, size: 16, color: scheme.onSurfaceVariant),
+                ),
+              ),
+              Expanded(
+                child: Tooltip(
+                  message: l10n.dockPillTooltip,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(AppRadius.chip),
+                    onTap: widget.onToggleCollapsed,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.photo_camera_outlined, size: 18),
+                        const SizedBox(width: 6),
+                        Text('${controller.items.length}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                        const SizedBox(width: 4),
+                        Icon(Icons.chevron_left_rounded, size: 18, color: scheme.onSurfaceVariant),
+                      ],
                     ),
                   ),
                 ),

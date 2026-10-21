@@ -217,6 +217,31 @@ class _CaptureThumbState extends State<CaptureThumb> {
   }
 }
 
+/// 방금 찍은 캡처가 독에 들어올 때 살짝 커지며 나타나게 한다. 오래된 항목은 그냥 보여 준다.
+class CaptureEntrance extends StatelessWidget {
+  const CaptureEntrance({super.key, required this.item, required this.child});
+
+  final CaptureItem item;
+  final Widget child;
+
+  static const _fresh = Duration(seconds: 2);
+
+  @override
+  Widget build(BuildContext context) {
+    if (DateTime.now().difference(item.createdAt) > _fresh) return child;
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutBack,
+      child: child,
+      builder: (context, t, child) => Opacity(
+        opacity: t.clamp(0, 1),
+        child: Transform.scale(scale: 0.6 + 0.4 * t, child: child),
+      ),
+    );
+  }
+}
+
 /// 영상은 길이(`0:07`), GIF는 `GIF`를 모서리에 단다.
 class _KindBadge extends StatelessWidget {
   const _KindBadge({required this.item});

@@ -285,4 +285,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsResetFolder => 'Default';
+
+  @override
+  String get dockCollapseTooltip => 'Collapse';
+
+  @override
+  String get dockPillTooltip => 'Expand dock';
 }

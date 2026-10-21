@@ -160,5 +160,7 @@
         "type": "int"
       }
     }
-  }
+  },
+  "dockCollapseTooltip": "Collapse",
+  "dockPillTooltip": "Expand dock"
 }

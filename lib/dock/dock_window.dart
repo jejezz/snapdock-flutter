@@ -25,10 +25,11 @@ abstract final class DockWindow {
   static const hintHeight = 16.0;
 
   /// 세로는 썸네일 높이에 ✕ 배지가 넘치는 여백을 더한 값이다.
-  static Size sizeFor({required int count, required DockSize size}) {
+  static Size sizeFor({required int count, required DockSize size, bool collapsed = false}) {
+    if (collapsed) return const Size(132, 40);
     const visibleMax = 8;
     final shown = count.clamp(0, visibleMax);
-    const chrome = 12.0 + 20 + 6 + 28 * 5 + 6; // 안쪽 여백 + 손잡이 + 단추 5개
+    const chrome = 12.0 + 20 + 6 + 28 * 6 + 6; // 안쪽 여백 + 손잡이 + 단추 6개
     final thumbs = shown * (size.width + 6);
     return Size(
       (chrome + thumbs).clamp(180, 900),

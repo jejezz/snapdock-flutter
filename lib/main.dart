@@ -61,7 +61,7 @@ Future<void> main() async {
       // 마지막에 독으로 끝냈다면 독으로 시작한다 (커서가 있는 모니터의 위쪽 가운데).
       if (captureSettings.dockMode) {
         final size = DockSize.values[captureSettings.dockSizeIndex.clamp(0, DockSize.values.length - 1)];
-        await DockWindow.enter(DockWindow.sizeFor(count: 0, size: size));
+        await DockWindow.enter(DockWindow.sizeFor(count: captures.items.length, size: size, collapsed: captureSettings.dockCollapsed));
       }
       await windowManager.show();
       await windowManager.focus();
@@ -204,6 +204,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late bool _dock = widget.captureSettings.dockMode;
+  late bool _collapsed = widget.captureSettings.dockCollapsed;
   late DockSize _dockSize = DockSize.values[widget.captureSettings.dockSizeIndex.clamp(0, DockSize.values.length - 1)];
   int _lastCount = 0;
 
@@ -225,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onCapturesChanged() {
     final count = _captures.items.length;
-    if (_dock && count != _lastCount) {
+    if (_dock && !_collapsed && count != _lastCount) {
       DockWindow.resize(DockWindow.sizeFor(count: count, size: _dockSize));
     }
     _lastCount = count;
@@ -235,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _dock = true);
     widget.captureSettings.setDockMode(true);
     await DockWindow.enter(
-      DockWindow.sizeFor(count: _captures.items.length, size: _dockSize),
+      DockWindow.sizeFor(count: _captures.items.length, size: _dockSize, collapsed: _collapsed),
     );
   }
 
@@ -245,11 +246,20 @@ class _HomeScreenState extends State<HomeScreen> {
     await DockWindow.exit();
   }
 
+  /// 독을 알약으로 접거나 다시 펼친다.
+  void _toggleCollapsed() {
+    setState(() => _collapsed = !_collapsed);
+    widget.captureSettings.setDockCollapsed(_collapsed);
+    DockWindow.resize(
+      DockWindow.sizeFor(count: _captures.items.length, size: _dockSize, collapsed: _collapsed),
+    );
+  }
+
   void _cycleDockSize() {
     setState(() => _dockSize = _dockSize.next);
     widget.captureSettings.setDockSizeIndex(_dockSize.index);
     DockWindow.resize(
-      DockWindow.sizeFor(count: _captures.items.length, size: _dockSize),
+      DockWindow.sizeFor(count: _captures.items.length, size: _dockSize, collapsed: _collapsed),
     );
   }
 
@@ -261,6 +271,8 @@ class _HomeScreenState extends State<HomeScreen> {
         size: _dockSize,
         onSizeChanged: _cycleDockSize,
         onExpand: _exitDock,
+        collapsed: _collapsed,
+        onToggleCollapsed: _toggleCollapsed,
       );
     }
     final l10n = AppLocalizations.of(context);
@@ -473,10 +485,14 @@ class _CaptureGrid extends StatelessWidget {
                 runSpacing: AppSpacing.md,
                 children: [
                   for (final item in controller.items)
-                    CaptureThumb(
-                      controller: controller,
+                    CaptureEntrance(
+                      key: ValueKey(item.id),
                       item: item,
-                      width: 180,
+                      child: CaptureThumb(
+                        controller: controller,
+                        item: item,
+                        width: 180,
+                      ),
                     ),
                 ],
               ),

@@ -17,6 +17,7 @@ class CaptureSettings extends ChangeNotifier {
   static const _kVideoDir = 'video_folder';
   static const _kDockMode = 'dock_mode';
   static const _kDockSize = 'dock_size';
+  static const _kDockCollapsed = 'dock_collapsed';
 
   final SharedPreferences _prefs;
   final CaptureService _service;
@@ -33,6 +34,11 @@ class CaptureSettings extends ChangeNotifier {
 
   /// 독 썸네일 크기의 순번(0 작게, 1 보통, 2 크게).
   int get dockSizeIndex => _prefs.getInt(_kDockSize) ?? 1;
+
+  /// 독을 알약 모양으로 접어 두었는가.
+  bool get dockCollapsed => _prefs.getBool(_kDockCollapsed) ?? false;
+
+  Future<void> setDockCollapsed(bool value) => _prefs.setBool(_kDockCollapsed, value);
 
   Future<void> setDockMode(bool value) => _prefs.setBool(_kDockMode, value);
 

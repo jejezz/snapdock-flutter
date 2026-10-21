@@ -589,6 +589,18 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'기본값'**
   String get settingsResetFolder;
+
+  /// No description provided for @dockCollapseTooltip.
+  ///
+  /// In ko, this message translates to:
+  /// **'접기'**
+  String get dockCollapseTooltip;
+
+  /// No description provided for @dockPillTooltip.
+  ///
+  /// In ko, this message translates to:
+  /// **'독 펼치기'**
+  String get dockPillTooltip;
 }
 
 class _AppLocalizationsDelegate
