@@ -24,9 +24,15 @@ conventions-v1 — jejezz/application-release-templates (`conventions/README.md`
 
 ## 구현 메모
 
-- 캡처·녹화는 플랫폼 네이티브 코드로 한다. macOS는 ScreenCaptureKit(12.3 이상 필요 — 현재 배포 대상이 12.0이므로 기능 구현 때 올릴 것), Windows는 Windows.Graphics.Capture. Flutter 쪽은 MethodChannel로 호출한다.
+- 캡처·녹화는 플랫폼 네이티브 코드로 한다. macOS는 ScreenCaptureKit. 스크린샷 API(`SCScreenshotManager`)가 14부터라서 배포 대상을 macOS 14.0으로 올렸다, Windows는 Windows.Graphics.Capture. Flutter 쪽은 MethodChannel로 호출한다.
 - macOS는 "화면 기록" 권한이 필요하다. 디버그 빌드는 `.dev` 번들 ID를 써서 릴리스와 권한을 공유하지 않는다.
 - 영역 선택 오버레이는 전체 화면 투명 네이티브 창으로 만든다.
+
+## 구현 현황
+
+- 되는 것(macOS): 전역 단축키 ⌥⇧S → 마우스가 있는 디스플레이를 얼린 화면 위에서 영역 선택(8개 앵커, 이동, 크기 배지, 사각형/원형 전환) → 복사 또는 저장(~/Pictures/Snapdock) → 독에 항목 추가. 독 모드는 항상 위 작은 창이며 썸네일 클릭 시 복사, 올리면 ✕, 우클릭 메뉴, S/M/L 크기 순환.
+- 아직 없는 것: 창 선택, 화면 전체, 영상·GIF 녹화, 독에서 다른 앱으로 끌어다 놓기, 접힘(알약) 상태, 캡처 효과(번쩍임·날아가기), 단축키 설정, 캡처 목록 영속화, Windows 네이티브 캡처(채널 `art.zoomon.snapdock/capture`를 Windows에서도 구현해야 한다).
+- 네이티브: `macos/Runner/CaptureOverlay.swift`(오버레이), `CaptureChannel.swift`(채널). Flutter: `lib/capture/`, `lib/dock/`.
 
 ## 남은 일
 

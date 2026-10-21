@@ -192,4 +192,44 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get updateBusyBody =>
       'A task is in progress. Please try again when it has finished.';
+
+  @override
+  String get captureHotkeyHint => 'Shortcut ⌥⇧S';
+
+  @override
+  String get capturePermissionTitle => 'Screen recording permission needed';
+
+  @override
+  String get capturePermissionBody =>
+      'Allow Snapdock in System Settings, then restart the app.';
+
+  @override
+  String get capturePermissionOpen => 'Open settings';
+
+  @override
+  String get thumbCopy => 'Copy';
+
+  @override
+  String get thumbCopied => 'Copied';
+
+  @override
+  String get thumbRemove => 'Remove';
+
+  @override
+  String get thumbSaved => 'Saved';
+
+  @override
+  String get dockShrinkTooltip => 'Shrink to dock';
+
+  @override
+  String get dockExpandTooltip => 'Expand to window';
+
+  @override
+  String get dockSizeTooltip => 'Thumbnail size';
+
+  @override
+  String get dockCaptureTooltip => 'Capture';
+
+  @override
+  String get dockClearTooltip => 'Clear all';
 }

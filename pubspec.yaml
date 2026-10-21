@@ -46,6 +46,7 @@ dependencies:
       url: https://github.com/jejezz/application-release-templates
       path: updater
       ref: updater-v0.1.0
+  hotkey_manager: ^0.2.3
 
 dev_dependencies:
   flutter_test:

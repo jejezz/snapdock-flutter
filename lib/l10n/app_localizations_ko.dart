@@ -190,4 +190,43 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get updateBusyBody => '작업이 진행 중입니다. 끝난 뒤에 다시 시도해 주세요.';
+
+  @override
+  String get captureHotkeyHint => '단축키 ⌥⇧S';
+
+  @override
+  String get capturePermissionTitle => '화면 기록 권한이 필요합니다';
+
+  @override
+  String get capturePermissionBody => '시스템 설정에서 Snapdock을 허용한 뒤 앱을 다시 시작하세요.';
+
+  @override
+  String get capturePermissionOpen => '설정 열기';
+
+  @override
+  String get thumbCopy => '복사';
+
+  @override
+  String get thumbCopied => '복사됨';
+
+  @override
+  String get thumbRemove => '삭제';
+
+  @override
+  String get thumbSaved => '저장됨';
+
+  @override
+  String get dockShrinkTooltip => '독으로 줄이기';
+
+  @override
+  String get dockExpandTooltip => '창으로 펼치기';
+
+  @override
+  String get dockSizeTooltip => '썸네일 크기';
+
+  @override
+  String get dockCaptureTooltip => '캡처';
+
+  @override
+  String get dockClearTooltip => '모두 지우기';
 }

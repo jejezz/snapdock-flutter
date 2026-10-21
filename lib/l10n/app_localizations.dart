@@ -409,6 +409,84 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'작업이 진행 중입니다. 끝난 뒤에 다시 시도해 주세요.'**
   String get updateBusyBody;
+
+  /// No description provided for @captureHotkeyHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'단축키 ⌥⇧S'**
+  String get captureHotkeyHint;
+
+  /// No description provided for @capturePermissionTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'화면 기록 권한이 필요합니다'**
+  String get capturePermissionTitle;
+
+  /// No description provided for @capturePermissionBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'시스템 설정에서 Snapdock을 허용한 뒤 앱을 다시 시작하세요.'**
+  String get capturePermissionBody;
+
+  /// No description provided for @capturePermissionOpen.
+  ///
+  /// In ko, this message translates to:
+  /// **'설정 열기'**
+  String get capturePermissionOpen;
+
+  /// No description provided for @thumbCopy.
+  ///
+  /// In ko, this message translates to:
+  /// **'복사'**
+  String get thumbCopy;
+
+  /// No description provided for @thumbCopied.
+  ///
+  /// In ko, this message translates to:
+  /// **'복사됨'**
+  String get thumbCopied;
+
+  /// No description provided for @thumbRemove.
+  ///
+  /// In ko, this message translates to:
+  /// **'삭제'**
+  String get thumbRemove;
+
+  /// No description provided for @thumbSaved.
+  ///
+  /// In ko, this message translates to:
+  /// **'저장됨'**
+  String get thumbSaved;
+
+  /// No description provided for @dockShrinkTooltip.
+  ///
+  /// In ko, this message translates to:
+  /// **'독으로 줄이기'**
+  String get dockShrinkTooltip;
+
+  /// No description provided for @dockExpandTooltip.
+  ///
+  /// In ko, this message translates to:
+  /// **'창으로 펼치기'**
+  String get dockExpandTooltip;
+
+  /// No description provided for @dockSizeTooltip.
+  ///
+  /// In ko, this message translates to:
+  /// **'썸네일 크기'**
+  String get dockSizeTooltip;
+
+  /// No description provided for @dockCaptureTooltip.
+  ///
+  /// In ko, this message translates to:
+  /// **'캡처'**
+  String get dockCaptureTooltip;
+
+  /// No description provided for @dockClearTooltip.
+  ///
+  /// In ko, this message translates to:
+  /// **'모두 지우기'**
+  String get dockClearTooltip;
 }
 
 class _AppLocalizationsDelegate
