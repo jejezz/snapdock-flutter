@@ -101,13 +101,15 @@ class _DockViewState extends State<DockView> {
                       icon: Icons.photo_library_outlined,
                       label: l10n.openPicturesFolder,
                       onHint: _setHint,
-                      onPressed: () => controller.openSaveFolder(SaveFolder.pictures),
+                      onPressed: () =>
+                          controller.openSaveFolder(SaveFolder.pictures),
                     ),
                     _DockButton(
                       icon: Icons.video_library_outlined,
                       label: l10n.openMoviesFolder,
                       onHint: _setHint,
-                      onPressed: () => controller.openSaveFolder(SaveFolder.movies),
+                      onPressed: () =>
+                          controller.openSaveFolder(SaveFolder.movies),
                     ),
                     _DockButton(
                       icon: Icons.photo_size_select_large_rounded,
@@ -168,7 +170,6 @@ class _DockViewState extends State<DockView> {
 extension on _DockViewState {
   /// 접은 독: 손잡이, 카메라, 개수, 펼치기 화살표만 남는 알약. 어디를 눌러도 펼친다.
   Widget _buildPill(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -182,25 +183,33 @@ extension on _DockViewState {
                 child: SizedBox(
                   width: 20,
                   height: double.infinity,
-                  child: Icon(Icons.drag_indicator_rounded, size: 16, color: scheme.onSurfaceVariant),
+                  child: Icon(
+                    Icons.drag_indicator_rounded,
+                    size: 16,
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
               ),
               Expanded(
-                child: Tooltip(
-                  message: l10n.dockPillTooltip,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(AppRadius.chip),
-                    onTap: widget.onToggleCollapsed,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.photo_camera_outlined, size: 18),
-                        const SizedBox(width: 6),
-                        Text('${controller.items.length}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                        const SizedBox(width: 4),
-                        Icon(Icons.chevron_left_rounded, size: 18, color: scheme.onSurfaceVariant),
-                      ],
-                    ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(AppRadius.chip),
+                  onTap: widget.onToggleCollapsed,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.photo_camera_outlined, size: 18),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${controller.items.length}',
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.chevron_left_rounded,
+                        size: 18,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ],
                   ),
                 ),
               ),

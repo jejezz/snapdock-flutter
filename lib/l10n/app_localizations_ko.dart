@@ -285,7 +285,4 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get dockCollapseTooltip => '접기';
-
-  @override
-  String get dockPillTooltip => '독 펼치기';
 }
