@@ -79,7 +79,7 @@ class _DockViewState extends State<DockView> {
                     Expanded(
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
-                        clipBehavior: Clip.none,
+                        clipBehavior: Clip.hardEdge,
                         itemCount: controller.items.length,
                         separatorBuilder: (_, _) => const SizedBox(width: 6),
                         itemBuilder: (context, i) => Align(
