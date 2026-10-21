@@ -25,7 +25,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/demo.gif" width="720" alt="Snapdock demo: press the shortcut, drag a region, and the capture lands in the dock">
+  <img src="docs/screenshots/demo.gif" width="720" alt="Snapdock demo: new captures land in the dock, the thumbnails change size, and the dock folds into a pill">
 </p>
 
 ## Features

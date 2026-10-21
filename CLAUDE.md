@@ -44,10 +44,15 @@ conventions-v1 — jejezz/application-release-templates (`conventions/README.md`
 
 - 독 모드: 마지막에 독으로 끝내면 독으로 시작하고 썸네일 크기(S/M/L)도 기억한다(shared_preferences). 독은 항상 커서가 있는 모니터의 위쪽 가운데(여백 12px)에서 시작하고, 썸네일이 늘면 가로 가운데를 지키며 자란다.
 
+## README 스크린샷과 데모
+
+- 스크린샷(`docs/screenshots/home.png`, `detail.png`)은 격리한 앱 사본에 가짜 캡처를 채워 `capture.sh`·`frame.py`로 만들었다. 원본은 `docs/screenshots/raw/`.
+- 데모 GIF는 `tool/readme/demo.sh`가 만든다. Snapdock은 자기 독과 오버레이를 캡처에서 빼므로 직접 찍을 수 없어서, 디버그 빌드가 스스로 독의 사용(새 캡처 도착, 크기 전환, 알약 접기·펼치기)을 재생하는 동안 `screencapture`로 화면 위쪽 띠를 녹화한다(`lib/dev/demo_runner.dart`, 환경 변수 `SNAPDOCK_DEMO=1`). 릴리스 빌드에는 들어가지 않는다(`kDebugMode`, Swift `#if DEBUG`). 화면 속 캡처는 모두 `demo_assets.py`가 그린 샘플이다.
+- 녹화 영역은 배경(`DemoBackdrop`)으로 덮어서 뒤의 사용자 화면이 찍히지 않게 하고, 배경이 있는 구간만 잘라 GIF로 만든다.
+
 ## 남은 일
 
 - 앱 아이콘의 소품 글리프는 임시 그림(`assets/icon/source_glyph.png`). 고양이는 그대로 두고 Icons8 글리프로 교체한다.
-- README의 Features, How it works, 스크린샷, 데모 GIF는 기능이 생긴 뒤 채운다(첫 정식 릴리스 전 필수).
 - 멀티 모니터 확인은 macOS 개발 환경에 모니터가 하나뿐이라 미뤄 두었다. Windows에서 확인한다:
   - ⌥⇧S가 커서가 있는 모니터에서 오버레이를 연다.
   - 독이 커서가 있는 모니터의 위쪽 가운데에 뜬다.

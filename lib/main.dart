@@ -5,8 +5,10 @@
 //   언어 해석 · macOS 앱 메뉴 About · 앱 바 [테마 | 언어 | 정보] · 빈 상태.
 // 기존 앱에는 통째로 덮어쓰지 말고 필요한 부분만 옮긴다.
 
+import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
@@ -20,6 +22,8 @@ import 'app_identity.dart';
 import 'capture/capture_controller.dart';
 import 'capture/capture_service.dart';
 import 'dock/capture_thumb.dart';
+import 'dev/demo_hooks.dart';
+import 'dev/demo_runner.dart';
 import 'dock/dock_view.dart';
 import 'dock/dock_window.dart';
 import 'l10n/app_localizations.dart';
@@ -72,6 +76,7 @@ Future<void> main() async {
   // 데스크톱이 아니거나 UPDATE_SERVER 가 비어 있으면 null — 업데이트 확인 없음.
   final updates = await UpdateService.create();
   // UpdateScope 는 MaterialApp 위에 둔다 — 정보 창이 이것을 읽어 "업데이트 확인" 단추를 붙인다.
+  unawaited(runDemoIfRequested(captureService, captures));
   runApp(
     UpdateScope(
       service: updates,
@@ -215,12 +220,18 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _lastCount = _captures.items.length;
     _captures.addListener(_onCapturesChanged);
+    if (kDebugMode) {
+      DemoHooks.cycleDockSize = _cycleDockSize;
+      DemoHooks.toggleCollapsed = _toggleCollapsed;
+    }
     if (_isDesktop) _captures.refreshPermission();
   }
 
   @override
   void dispose() {
     _captures.removeListener(_onCapturesChanged);
+    DemoHooks.cycleDockSize = null;
+    DemoHooks.toggleCollapsed = null;
     super.dispose();
   }
 

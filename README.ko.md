@@ -25,7 +25,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/demo.gif" width="720" alt="Snapdock 데모: 단축키를 누르고 영역을 끌면 캡처가 독에 들어옵니다">
+  <img src="docs/screenshots/demo.gif" width="720" alt="Snapdock 데모: 새 캡처가 독에 들어오고, 썸네일 크기가 바뀌고, 독이 알약으로 접힙니다">
 </p>
 
 ## 기능
