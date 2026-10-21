@@ -5,24 +5,24 @@ enum CaptureShape { rect, circle, window, screen }
 
 enum CaptureAction { copy, save }
 
-/// 캡처의 종류. 영상과 GIF는 [CaptureItem.filePath]에 파일이 있다.
+/// 캡처의 종류.
 enum CaptureKind { image, video, gif }
 
 /// 저장 폴더: 이미지와 GIF는 사진, 영상은 동영상 아래 `Snapdock`.
 enum SaveFolder { pictures, movies }
 
-/// 독에 쌓이는 캡처 한 건. 항목마다 따로 보관한다.
+/// 독에 쌓이는 캡처 한 건. 항목마다 따로 보관하고, 내용은 모두 파일로 둔다.
 @immutable
 class CaptureItem {
   const CaptureItem({
     required this.id,
-    required this.png,
+    required this.kind,
+    required this.path,
+    required this.previewPath,
     required this.width,
     required this.height,
     required this.shape,
     required this.createdAt,
-    this.kind = CaptureKind.image,
-    this.filePath,
     this.duration,
     this.savedPath,
   });
@@ -30,19 +30,45 @@ class CaptureItem {
   final int id;
   final CaptureKind kind;
 
-  /// 이미지면 결과 PNG, 영상·GIF면 썸네일 PNG.
-  final Uint8List png;
+  /// 내용 파일: 이미지는 PNG, 영상은 MP4, GIF는 GIF. 끌어다 놓을 때 이 파일이 나간다.
+  final String path;
+
+  /// 독에 보여 줄 그림. 이미지는 [path]와 같고, 영상·GIF는 대표 프레임 PNG다.
+  final String previewPath;
   final int width;
   final int height;
   final CaptureShape shape;
   final DateTime createdAt;
-
-  /// 영상·GIF 파일(임시 폴더). 저장하면 사용자 폴더로 복사한다.
-  final String? filePath;
   final Duration? duration;
 
-  /// 저장 단추로 파일에 쓴 경우의 경로.
+  /// 저장 단추로 사용자 폴더에 쓴 경우의 경로.
   final String? savedPath;
+
+  Map<String, Object?> toJson() => {
+        'id': id,
+        'kind': kind.name,
+        'path': path,
+        'preview': previewPath,
+        'width': width,
+        'height': height,
+        'shape': shape.name,
+        'createdAt': createdAt.millisecondsSinceEpoch,
+        'durationMs': duration?.inMilliseconds,
+        'savedPath': savedPath,
+      };
+
+  static CaptureItem fromJson(Map<String, Object?> json) => CaptureItem(
+        id: json['id']! as int,
+        kind: CaptureKind.values.byName(json['kind']! as String),
+        path: json['path']! as String,
+        previewPath: json['preview']! as String,
+        width: json['width']! as int,
+        height: json['height']! as int,
+        shape: CaptureShape.values.byName(json['shape']! as String),
+        createdAt: DateTime.fromMillisecondsSinceEpoch(json['createdAt']! as int),
+        duration: json['durationMs'] == null ? null : Duration(milliseconds: json['durationMs']! as int),
+        savedPath: json['savedPath'] as String?,
+      );
 }
 
 /// 네이티브 캡처 채널 (macos/Runner/CaptureChannel.swift).
@@ -75,8 +101,13 @@ class CaptureService {
       _channel.invokeMethod<String>('saveFile', {'path': path});
 
   /// 설정을 네이티브에 알린다. 폴더가 null이면 기본 위치(사진/동영상 폴더의 Snapdock)를 쓴다.
-  Future<void> configure({required int maxSeconds, String? imageDir, String? videoDir}) =>
-      _channel.invokeMethod<void>('configure', {'maxSeconds': maxSeconds, 'imageDir': imageDir, 'videoDir': videoDir});
+  Future<void> configure({required int maxSeconds, String? imageDir, String? videoDir, String? workDir}) =>
+      _channel.invokeMethod<void>('configure', {
+        'maxSeconds': maxSeconds,
+        'imageDir': imageDir,
+        'videoDir': videoDir,
+        'workDir': workDir,
+      });
 
   Future<void> openSaveFolder(SaveFolder folder) => _channel.invokeMethod<void>('openFolder', {'kind': folder.name});
 

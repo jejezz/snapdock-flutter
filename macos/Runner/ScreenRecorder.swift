@@ -12,6 +12,8 @@ enum CaptureConfig {
   static var imageDirectory: URL?
   /// nil이면 ~/Movies/Snapdock. 영상(MP4)이 간다.
   static var videoDirectory: URL?
+  /// 녹화 파일을 처음 쓰는 곳. 독이 보관하는 폴더다. nil이면 임시 폴더.
+  static var workDirectory: URL?
 
   static func saveFolder(movies: Bool) -> URL? {
     if let custom = movies ? videoDirectory : imageDirectory { return custom }
@@ -148,7 +150,7 @@ final class RecordingSession {
   func run() async throws -> CaptureOutcome {
     let scale = screen.backingScaleFactor
     let (filter, config) = makeStream(scale: scale)
-    let temp = FileManager.default.temporaryDirectory.appendingPathComponent("Snapdock", isDirectory: true)
+    let temp = CaptureConfig.workDirectory ?? FileManager.default.temporaryDirectory.appendingPathComponent("Snapdock", isDirectory: true)
     try FileManager.default.createDirectory(at: temp, withIntermediateDirectories: true)
     let stamp = Self.timestamp()
     let mp4 = temp.appendingPathComponent("Snapdock \(stamp).mp4")

@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_drag_out/flutter_drag_out.dart';
 
 import '../capture/capture_controller.dart';
 import '../capture/capture_service.dart';
@@ -85,8 +87,38 @@ class _CaptureThumbState extends State<CaptureThumb> {
     }
   }
 
+  /// 앱 안에서는 일반 [Draggable]이고, 포인터가 창 밖으로 나가는 순간 OS 드래그로 넘어가
+  /// 파일(이미지는 PNG, 영상·GIF는 그 파일)이 다른 앱으로 끌려 나간다.
   @override
   Widget build(BuildContext context) {
+    final tile = _buildTile(context);
+    final viewSize = MediaQuery.sizeOf(context);
+    final item = widget.item;
+    return Draggable<CaptureItem>(
+      data: item,
+      onDragUpdate: (details) => FlutterDragOut.maybeStartOnExit(
+        details.globalPosition,
+        viewSize: viewSize,
+        paths: () => File(item.path).existsSync() ? [item.path] : null,
+      ),
+      feedback: Material(
+        color: Colors.transparent,
+        child: Opacity(opacity: 0.85, child: SizedBox(width: widget.width, height: widget.width * 0.75, child: _preview())),
+      ),
+      childWhenDragging: Opacity(opacity: 0.35, child: tile),
+      child: tile,
+    );
+  }
+
+  Widget _preview() => Image.file(
+        File(widget.item.previewPath),
+        fit: BoxFit.contain,
+        cacheWidth: (widget.width * 3).round(),
+        filterQuality: FilterQuality.medium,
+        gaplessPlayback: true,
+      );
+
+  Widget _buildTile(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final height = widget.width * 0.75;
@@ -126,12 +158,7 @@ class _CaptureThumbState extends State<CaptureThumb> {
                     ),
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: Image.memory(
-                    widget.item.png,
-                    fit: BoxFit.contain,
-                    filterQuality: FilterQuality.medium,
-                    gaplessPlayback: true,
-                  ),
+                  child: _preview(),
                 ),
               ),
               if (widget.item.kind != CaptureKind.image)

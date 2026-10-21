@@ -10,6 +10,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'about/about_dialog.dart';
@@ -39,7 +40,12 @@ Future<void> main() async {
   registerExtraLicenses();
 
   final captureService = CaptureService();
-  final captureSettings = await CaptureSettings.load(captureService);
+  // 캡처한 파일과 목록(index.json)을 두는 곳. 앱을 다시 켜도 독이 그대로 돌아온다.
+  final support = await getApplicationSupportDirectory();
+  final storeDir = Directory('${support.path}${Platform.pathSeparator}captures');
+  final captureSettings = await CaptureSettings.load(captureService, workDir: storeDir.path);
+  final captures = CaptureController(captureService, storeDir: storeDir);
+  await captures.load();
 
   if (_isDesktop) {
     await windowManager.ensureInitialized();
@@ -69,16 +75,16 @@ Future<void> main() async {
   runApp(
     UpdateScope(
       service: updates,
-      child: App(settings: settings, updates: updates, captureService: captureService, captureSettings: captureSettings),
+      child: App(settings: settings, updates: updates, captures: captures, captureSettings: captureSettings),
     ),
   );
 }
 
 class App extends StatefulWidget {
-  const App({super.key, required this.settings, this.updates, required this.captureService, required this.captureSettings});
+  const App({super.key, required this.settings, this.updates, required this.captures, required this.captureSettings});
 
   final AppSettings settings;
-  final CaptureService captureService;
+  final CaptureController captures;
   final CaptureSettings captureSettings;
   final UpdateService? updates;
 
@@ -88,7 +94,7 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> with WidgetsBindingObserver {
   final _navigatorKey = GlobalKey<NavigatorState>();
-  late final _captures = CaptureController(widget.captureService);
+  CaptureController get _captures => widget.captures;
 
   @override
   void initState() {

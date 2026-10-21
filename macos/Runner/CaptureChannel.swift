@@ -40,6 +40,7 @@ enum CaptureChannel {
         if let seconds = args?["maxSeconds"] as? Int { CaptureConfig.maxRecordingSeconds = Double(max(1, seconds)) }
         CaptureConfig.imageDirectory = (args?["imageDir"] as? String).map { URL(fileURLWithPath: $0, isDirectory: true) }
         CaptureConfig.videoDirectory = (args?["videoDir"] as? String).map { URL(fileURLWithPath: $0, isDirectory: true) }
+        CaptureConfig.workDirectory = (args?["workDir"] as? String).map { URL(fileURLWithPath: $0, isDirectory: true) }
         result(nil)
       case "openFolder":
         let kind = (call.arguments as? [String: Any])?["kind"] as? String

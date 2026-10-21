@@ -26,7 +26,7 @@ void main() {
     expect(settings.maxSeconds, 10);
     expect(settings.imageDir, isNull);
     expect(settings.videoDir, isNull);
-    expect(sent.single, {'maxSeconds': 10, 'imageDir': null, 'videoDir': null});
+    expect(sent.single, {'maxSeconds': 10, 'imageDir': null, 'videoDir': null, 'workDir': null});
   });
 
   test('keeps the length within limits and persists it', () async {
@@ -48,7 +48,7 @@ void main() {
     await settings.setVideoDir('/tmp/clips');
     expect((await CaptureSettings.load(CaptureService())).imageDir, '/tmp/shots');
     expect((await CaptureSettings.load(CaptureService())).videoDir, '/tmp/clips');
-    expect(sent.last, {'maxSeconds': 10, 'imageDir': '/tmp/shots', 'videoDir': '/tmp/clips'});
+    expect(sent.last, {'maxSeconds': 10, 'imageDir': '/tmp/shots', 'videoDir': '/tmp/clips', 'workDir': null});
 
     await settings.setImageDir(null);
     expect((await CaptureSettings.load(CaptureService())).imageDir, isNull);

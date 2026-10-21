@@ -6,7 +6,7 @@ import '../capture/capture_service.dart';
 
 /// 캡처 설정: 녹화 길이와 저장 위치. 바뀔 때마다 저장하고 네이티브에도 알린다.
 class CaptureSettings extends ChangeNotifier {
-  CaptureSettings._(this._prefs, this._service, this._maxSeconds, this._imageDir, this._videoDir);
+  CaptureSettings._(this._prefs, this._service, this._workDir, this._maxSeconds, this._imageDir, this._videoDir);
 
   static const minSeconds = 3;
   static const maxSecondsLimit = 60;
@@ -20,6 +20,9 @@ class CaptureSettings extends ChangeNotifier {
 
   final SharedPreferences _prefs;
   final CaptureService _service;
+
+  /// 네이티브가 녹화 파일을 쓰는 작업 폴더. 독이 보관하는 폴더와 같다.
+  final String? _workDir;
 
   int _maxSeconds;
   String? _imageDir;
@@ -44,11 +47,12 @@ class CaptureSettings extends ChangeNotifier {
   /// 영상(MP4)을 저장할 폴더. null이면 기본 위치.
   String? get videoDir => _videoDir;
 
-  static Future<CaptureSettings> load(CaptureService service) async {
+  static Future<CaptureSettings> load(CaptureService service, {String? workDir}) async {
     final prefs = await SharedPreferences.getInstance();
     final settings = CaptureSettings._(
       prefs,
       service,
+      workDir,
       (prefs.getInt(_kSeconds) ?? defaultSeconds).clamp(minSeconds, maxSecondsLimit),
       _nonEmpty(prefs.getString(_kImageDir)),
       _nonEmpty(prefs.getString(_kVideoDir)),
@@ -94,7 +98,7 @@ class CaptureSettings extends ChangeNotifier {
   /// 현재 값을 네이티브 캡처에 보낸다. 네이티브가 없는 플랫폼에서는 조용히 넘어간다.
   Future<void> apply() async {
     try {
-      await _service.configure(maxSeconds: _maxSeconds, imageDir: _imageDir, videoDir: _videoDir);
+      await _service.configure(maxSeconds: _maxSeconds, imageDir: _imageDir, videoDir: _videoDir, workDir: _workDir);
     } on MissingPluginException {
       debugPrint('Snapdock: native capture is not available on this platform yet');
     }
