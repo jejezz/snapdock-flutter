@@ -487,6 +487,12 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'모두 지우기'**
   String get dockClearTooltip;
+
+  /// No description provided for @thumbSave.
+  ///
+  /// In ko, this message translates to:
+  /// **'저장'**
+  String get thumbSave;
 }
 
 class _AppLocalizationsDelegate

@@ -153,5 +153,6 @@
   "dockExpandTooltip": "창으로 펼치기",
   "dockSizeTooltip": "썸네일 크기",
   "dockCaptureTooltip": "캡처",
-  "dockClearTooltip": "모두 지우기"
+  "dockClearTooltip": "모두 지우기",
+  "thumbSave": "저장"
 }

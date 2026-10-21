@@ -43,7 +43,11 @@ class CaptureController extends ChangeNotifier {
 
   /// 단축키나 단추에서 부른다. 이미 선택 중이면 무시한다.
   Future<void> capture() async {
-    if (_busy) return;
+    if (_busy) {
+      // 녹화 중에 단축키를 한 번 더 누르면 일찍 끝낸다. 선택 중이면 네이티브가 무시한다.
+      await _service.stopRecording();
+      return;
+    }
     _busy = true;
     notifyListeners();
     try {
@@ -61,7 +65,12 @@ class CaptureController extends ChangeNotifier {
           height: result.height,
           shape: result.shape,
           createdAt: DateTime.now(),
-          savedPath: result.savedPath,
+          kind: result.kind,
+          filePath: result.kind == CaptureKind.image ? null : result.savedPath,
+          duration: result.durationMs == null
+              ? null
+              : Duration(milliseconds: result.durationMs!),
+          savedPath: result.kind == CaptureKind.image ? result.savedPath : null,
         ),
       );
     } on CapturePermissionDenied {
@@ -70,14 +79,29 @@ class CaptureController extends ChangeNotifier {
       await _service.requestPermission();
     } on MissingPluginException {
       // 이 플랫폼의 네이티브 캡처가 아직 없다 (Windows 구현 전).
-      debugPrint('Snapdock: native capture is not available on this platform yet');
+      debugPrint(
+        'Snapdock: native capture is not available on this platform yet',
+      );
     } finally {
       _busy = false;
       notifyListeners();
     }
   }
 
-  Future<void> copy(CaptureItem item) => _service.copyImage(item.png);
+  Future<void> copy(CaptureItem item) {
+    final path = item.filePath;
+    return path == null
+        ? _service.copyImage(item.png)
+        : _service.copyFile(path);
+  }
+
+  /// 사용자 폴더(사진/동영상)로 저장하고 그 경로를 돌려준다.
+  Future<String?> save(CaptureItem item) {
+    final path = item.filePath;
+    return path == null
+        ? _service.saveImage(item.png)
+        : _service.saveFile(path);
+  }
 
   void remove(CaptureItem item) {
     if (_items.remove(item)) notifyListeners();

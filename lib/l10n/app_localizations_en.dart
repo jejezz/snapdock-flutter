@@ -232,4 +232,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dockClearTooltip => 'Clear all';
+
+  @override
+  String get thumbSave => 'Save';
 }

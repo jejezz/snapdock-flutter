@@ -31,6 +31,7 @@
 		3DC9EE4A9D2400B16D71504D /* CaptureOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3639BE94A000774F31EEAC2C /* CaptureOverlay.swift */; };
 		52A60752A7B3DC0BED58DE80 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1948210DCA9D6DE5F94DB299 /* Pods_RunnerTests.framework */; };
 		78A318202AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 78A3181F2AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage */; };
+		8823811160D2DA295388AA5E /* ScreenRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B9A5C753E6FBDEE3EF791C /* ScreenRecorder.swift */; };
 		AD02437B3DF7D862D87E9D08 /* CaptureChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF7AC765F582E37A4312B68F /* CaptureChannel.swift */; };
 /* End PBXBuildFile section */
 
@@ -84,6 +85,7 @@
 		33E51914231749380026EE4D /* Release.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = Release.entitlements; sourceTree = "<group>"; };
 		33E5194F232828860026EE4D /* AppInfo.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = AppInfo.xcconfig; sourceTree = "<group>"; };
 		3639BE94A000774F31EEAC2C /* CaptureOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CaptureOverlay.swift; sourceTree = "<group>"; };
+		49B9A5C753E6FBDEE3EF791C /* ScreenRecorder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScreenRecorder.swift; sourceTree = "<group>"; };
 		4C937817C7D860871BC7A1D9 /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
 		5B146BA1BC08EBB320E74275 /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
 		60F8FA361D1B97301DCA288A /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -191,6 +193,7 @@
 				33BA886A226E78AF003329D5 /* Configs */,
 				3639BE94A000774F31EEAC2C /* CaptureOverlay.swift */,
 				EF7AC765F582E37A4312B68F /* CaptureChannel.swift */,
+				49B9A5C753E6FBDEE3EF791C /* ScreenRecorder.swift */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -458,6 +461,7 @@
 				335BBD1B22A9A15E00E9071D /* GeneratedPluginRegistrant.swift in Sources */,
 				3DC9EE4A9D2400B16D71504D /* CaptureOverlay.swift in Sources */,
 				AD02437B3DF7D862D87E9D08 /* CaptureChannel.swift in Sources */,
+				8823811160D2DA295388AA5E /* ScreenRecorder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

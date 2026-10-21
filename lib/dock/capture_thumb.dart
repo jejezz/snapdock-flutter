@@ -42,6 +42,15 @@ class _CaptureThumbState extends State<CaptureThumb> {
 
   Future<void> _copy() async {
     await widget.controller.copy(widget.item);
+    _flashCheck();
+  }
+
+  Future<void> _save() async {
+    await widget.controller.save(widget.item);
+    _flashCheck();
+  }
+
+  void _flashCheck() {
     if (!mounted) return;
     setState(() => _copied = true);
     _copiedTimer?.cancel();
@@ -62,12 +71,15 @@ class _CaptureThumbState extends State<CaptureThumb> {
       ),
       items: [
         PopupMenuItem(value: 'copy', child: Text(l10n.thumbCopy)),
+        PopupMenuItem(value: 'save', child: Text(l10n.thumbSave)),
         PopupMenuItem(value: 'remove', child: Text(l10n.thumbRemove)),
       ],
     );
     switch (choice) {
       case 'copy':
         await _copy();
+      case 'save':
+        await _save();
       case 'remove':
         widget.controller.remove(widget.item);
     }
@@ -78,6 +90,11 @@ class _CaptureThumbState extends State<CaptureThumb> {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final height = widget.width * 0.75;
+    final tint = switch (widget.item.kind) {
+      CaptureKind.image => scheme.primary,
+      CaptureKind.video => AppColors.accent,
+      CaptureKind.gif => AppColors.success,
+    };
     return MouseRegion(
       onEnter: (_) {
         setState(() => _hover = true);
@@ -100,9 +117,13 @@ class _CaptureThumbState extends State<CaptureThumb> {
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: scheme.primary.withValues(alpha: 0.12),
+                    color: tint.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(AppRadius.button - 2),
-                    border: Border.all(color: scheme.outlineVariant),
+                    border: Border.all(
+                      color: widget.item.kind == CaptureKind.image
+                          ? scheme.outlineVariant
+                          : tint.withValues(alpha: 0.6),
+                    ),
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: Image.memory(
@@ -113,6 +134,12 @@ class _CaptureThumbState extends State<CaptureThumb> {
                   ),
                 ),
               ),
+              if (widget.item.kind != CaptureKind.image)
+                Positioned(
+                  right: 2,
+                  bottom: 2,
+                  child: _KindBadge(item: widget.item),
+                ),
               if (_copied)
                 Positioned.fill(
                   child: DecoratedBox(
@@ -160,5 +187,38 @@ class _CaptureThumbState extends State<CaptureThumb> {
         ),
       ),
     );
+  }
+}
+
+/// 영상은 길이(`0:07`), GIF는 `GIF`를 모서리에 단다.
+class _KindBadge extends StatelessWidget {
+  const _KindBadge({required this.item});
+
+  final CaptureItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = item.kind == CaptureKind.gif ? 'GIF' : _format(item.duration);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(3),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 9,
+          height: 1.1,
+          color: Colors.white,
+          fontFeatures: [FontFeature.tabularFigures()],
+        ),
+      ),
+    );
+  }
+
+  static String _format(Duration? d) {
+    final seconds = ((d?.inMilliseconds ?? 0) / 1000).round();
+    return '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
   }
 }

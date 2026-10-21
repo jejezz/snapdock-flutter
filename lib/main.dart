@@ -29,7 +29,8 @@ import 'update/update_scope.dart';
 import 'update/update_service.dart';
 import 'window/focus_tint.dart';
 
-final bool _isDesktop = Platform.isMacOS || Platform.isWindows || Platform.isLinux;
+final bool _isDesktop =
+    Platform.isMacOS || Platform.isWindows || Platform.isLinux;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,7 +56,12 @@ Future<void> main() async {
   // 데스크톱이 아니거나 UPDATE_SERVER 가 비어 있으면 null — 업데이트 확인 없음.
   final updates = await UpdateService.create();
   // UpdateScope 는 MaterialApp 위에 둔다 — 정보 창이 이것을 읽어 "업데이트 확인" 단추를 붙인다.
-  runApp(UpdateScope(service: updates, child: App(settings: settings, updates: updates)));
+  runApp(
+    UpdateScope(
+      service: updates,
+      child: App(settings: settings, updates: updates),
+    ),
+  );
 }
 
 class App extends StatefulWidget {
@@ -89,7 +95,10 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       modifiers: [HotKeyModifier.alt, HotKeyModifier.shift],
       scope: HotKeyScope.system,
     );
-    await hotKeyManager.register(hotKey, keyDownHandler: (_) => _captures.capture());
+    await hotKeyManager.register(
+      hotKey,
+      keyDownHandler: (_) => _captures.capture(),
+    );
   }
 
   @override
@@ -109,7 +118,8 @@ class _AppState extends State<App> with WidgetsBindingObserver {
     final brightness = switch (widget.settings.themeMode) {
       ThemeMode.light => Brightness.light,
       ThemeMode.dark => Brightness.dark,
-      ThemeMode.system => WidgetsBinding.instance.platformDispatcher.platformBrightness,
+      ThemeMode.system =>
+        WidgetsBinding.instance.platformDispatcher.platformBrightness,
     };
     windowManager.setBrightness(brightness);
   }
@@ -122,7 +132,9 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       context,
       tagline: l10n.aboutTagline,
       description: l10n.aboutDescription,
-      onCheckForUpdates: widget.updates == null ? null : () => widget.updates!.checkManually(context),
+      onCheckForUpdates: widget.updates == null
+          ? null
+          : () => widget.updates!.checkManually(context),
     );
   }
 
@@ -194,13 +206,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onCapturesChanged() {
     final count = _captures.items.length;
-    if (_dock && count != _lastCount) DockWindow.resize(DockWindow.sizeFor(count: count, size: _dockSize));
+    if (_dock && count != _lastCount) {
+      DockWindow.resize(DockWindow.sizeFor(count: count, size: _dockSize));
+    }
     _lastCount = count;
   }
 
   Future<void> _enterDock() async {
     setState(() => _dock = true);
-    await DockWindow.enter(DockWindow.sizeFor(count: _captures.items.length, size: _dockSize));
+    await DockWindow.enter(
+      DockWindow.sizeFor(count: _captures.items.length, size: _dockSize),
+    );
   }
 
   Future<void> _exitDock() async {
@@ -210,13 +226,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _cycleDockSize() {
     setState(() => _dockSize = _dockSize.next);
-    DockWindow.resize(DockWindow.sizeFor(count: _captures.items.length, size: _dockSize));
+    DockWindow.resize(
+      DockWindow.sizeFor(count: _captures.items.length, size: _dockSize),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     if (_dock) {
-      return DockView(controller: _captures, size: _dockSize, onSizeChanged: _cycleDockSize, onExpand: _exitDock);
+      return DockView(
+        controller: _captures,
+        size: _dockSize,
+        onSizeChanged: _cycleDockSize,
+        onExpand: _exitDock,
+      );
     }
     final l10n = AppLocalizations.of(context);
     return Scaffold(
@@ -243,9 +266,12 @@ class _HomeScreenState extends State<HomeScreen> {
         listenable: _captures,
         builder: (context, _) => Column(
           children: [
-            if (_captures.permissionDenied) _PermissionBanner(controller: _captures),
+            if (_captures.permissionDenied)
+              _PermissionBanner(controller: _captures),
             Expanded(
-              child: _captures.items.isEmpty ? _EmptyState(controller: _captures) : _CaptureGrid(controller: _captures),
+              child: _captures.items.isEmpty
+                  ? _EmptyState(controller: _captures)
+                  : _CaptureGrid(controller: _captures),
             ),
           ],
         ),
@@ -266,7 +292,10 @@ class _PermissionBanner extends StatelessWidget {
     return Material(
       color: scheme.errorContainer,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
         child: Row(
           children: [
             Icon(Icons.shield_outlined, color: scheme.onErrorContainer),
@@ -275,12 +304,24 @@ class _PermissionBanner extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(l10n.capturePermissionTitle, style: TextStyle(color: scheme.onErrorContainer, fontWeight: FontWeight.w700)),
-                  Text(l10n.capturePermissionBody, style: TextStyle(color: scheme.onErrorContainer)),
+                  Text(
+                    l10n.capturePermissionTitle,
+                    style: TextStyle(
+                      color: scheme.onErrorContainer,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    l10n.capturePermissionBody,
+                    style: TextStyle(color: scheme.onErrorContainer),
+                  ),
                 ],
               ),
             ),
-            TextButton(onPressed: controller.openPermissionSettings, child: Text(l10n.capturePermissionOpen)),
+            TextButton(
+              onPressed: controller.openPermissionSettings,
+              child: Text(l10n.capturePermissionOpen),
+            ),
           ],
         ),
       ),
@@ -304,11 +345,24 @@ class _CaptureBar extends StatelessWidget {
         SegmentedButton<CaptureShape>(
           showSelectedIcon: false,
           segments: const [
-            ButtonSegment(value: CaptureShape.rect, icon: Icon(Icons.crop_square_rounded)),
-            ButtonSegment(value: CaptureShape.circle, icon: Icon(Icons.circle_outlined)),
-            ButtonSegment(value: CaptureShape.window, icon: Icon(Icons.web_asset_rounded)),
+            ButtonSegment(
+              value: CaptureShape.rect,
+              icon: Icon(Icons.crop_square_rounded),
+            ),
+            ButtonSegment(
+              value: CaptureShape.circle,
+              icon: Icon(Icons.circle_outlined),
+            ),
+            ButtonSegment(
+              value: CaptureShape.window,
+              icon: Icon(Icons.web_asset_rounded),
+            ),
           ],
-          selected: {controller.shape == CaptureShape.screen ? CaptureShape.rect : controller.shape},
+          selected: {
+            controller.shape == CaptureShape.screen
+                ? CaptureShape.rect
+                : controller.shape,
+          },
           onSelectionChanged: (s) => controller.setShape(s.first),
         ),
         const SizedBox(width: AppSpacing.md),
@@ -317,7 +371,12 @@ class _CaptureBar extends StatelessWidget {
           child: Text(l10n.homeEmptyAction),
         ),
         const SizedBox(width: AppSpacing.md),
-        Text(l10n.captureHotkeyHint, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+        Text(
+          l10n.captureHotkeyHint,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
       ],
     );
   }
@@ -358,17 +417,32 @@ class _CaptureGrid extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Align(alignment: Alignment.centerLeft, child: _CaptureBar(controller: controller)),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: _CaptureBar(controller: controller),
+          ),
         ),
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.lg),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.sm,
+              AppSpacing.lg,
+              AppSpacing.lg,
+            ),
             child: Align(
               alignment: Alignment.topLeft,
               child: Wrap(
                 spacing: AppSpacing.md,
                 runSpacing: AppSpacing.md,
-                children: [for (final item in controller.items) CaptureThumb(controller: controller, item: item, width: 180)],
+                children: [
+                  for (final item in controller.items)
+                    CaptureThumb(
+                      controller: controller,
+                      item: item,
+                      width: 180,
+                    ),
+                ],
               ),
             ),
           ),

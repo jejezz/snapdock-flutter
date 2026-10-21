@@ -4,12 +4,24 @@ import ScreenCaptureKit
 /// 영역 선택 오버레이의 결과. `png`는 선택 모양(원형이면 바깥이 투명)으로 잘린 이미지다.
 struct CaptureOutcome {
   enum Action: String { case copy, save }
+  enum Kind: String { case image, video, gif }
 
   let action: Action
   let shape: CaptureShape
+  /// 이미지면 결과 PNG, 영상·GIF면 썸네일 PNG.
   let png: Data
   let width: Int
   let height: Int
+  var kind: Kind = .image
+  /// 영상·GIF 파일 경로.
+  var path: String?
+  var durationMs: Int?
+}
+
+/// 오버레이가 닫히면서 돌려주는 것: 다 만든 이미지, 또는 이어서 할 녹화 요청.
+enum OverlayResult {
+  case image(CaptureOutcome)
+  case record(RecordRequest)
 }
 
 enum CaptureShape: String {
@@ -37,6 +49,9 @@ final class CaptureOverlayController {
   static let shared = CaptureOverlayController()
 
   private var window: OverlayWindow?
+  private var screen: NSScreen?
+  private var display: SCDisplay?
+  private var ownApps: [SCRunningApplication] = []
   private var completion: ((Result<CaptureOutcome?, Error>) -> Void)?
 
   var isActive: Bool { window != nil }
@@ -76,6 +91,8 @@ final class CaptureOverlayController {
       throw CaptureError.noDisplay
     }
     let ownApps = content.applications.filter { $0.bundleIdentifier == Bundle.main.bundleIdentifier }
+    shared.display = display
+    shared.ownApps = ownApps
     let filter = SCContentFilter(display: display, excludingApplications: ownApps, exceptingWindows: [])
     let config = SCStreamConfiguration()
     let scale = screen.backingScaleFactor
@@ -121,19 +138,48 @@ final class CaptureOverlayController {
     window.isReleasedWhenClosed = false
 
     let view = OverlayView(frame: NSRect(origin: .zero, size: screen.frame.size), image: image, windows: windows, shape: shape)
-    view.onFinish = { [weak self] outcome in self?.finish(.success(outcome)) }
+    view.onFinish = { [weak self] result in self?.overlayFinished(result) }
     window.contentView = view
     self.window = window
+    self.screen = screen
 
     NSApp.activate(ignoringOtherApps: true)
     window.makeKeyAndOrderFront(nil)
     window.makeFirstResponder(view)
   }
 
-  private func finish(_ result: Result<CaptureOutcome?, Error>) {
+  private func overlayFinished(_ result: OverlayResult?) {
+    switch result {
+    case nil:
+      finish(.success(nil))
+    case .image(let outcome)?:
+      finish(.success(outcome))
+    case .record(let request)?:
+      guard let screen, let display else {
+        finish(.success(nil))
+        return
+      }
+      closeOverlay()
+      let ownApps = self.ownApps
+      Task { @MainActor in
+        do {
+          let outcome = try await RecordingSession(request: request, screen: screen, display: display, ownApps: ownApps).run()
+          self.finish(.success(outcome))
+        } catch {
+          self.finish(.failure(error))
+        }
+      }
+    }
+  }
+
+  private func closeOverlay() {
     window?.orderOut(nil)
     window?.contentView = nil
     window = nil
+  }
+
+  private func finish(_ result: Result<CaptureOutcome?, Error>) {
+    closeOverlay()
     let done = completion
     completion = nil
     done?(result)
@@ -181,7 +227,7 @@ private final class OverlayView: NSView {
     case resizing(Handle, original: NSRect)
   }
 
-  var onFinish: ((CaptureOutcome?) -> Void)?
+  var onFinish: ((OverlayResult?) -> Void)?
 
   private let image: CGImage
   private let windows: [WindowTarget]
@@ -426,6 +472,16 @@ private final class OverlayView: NSView {
     return b
   }
 
+  private func makeGIFButton() -> NSButton {
+    let b = NSButton(title: "GIF", target: self, action: #selector(recordGIFTapped))
+    b.isBordered = false
+    b.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
+    b.toolTip = "GIF 녹화 (최대 10초)"
+    b.widthAnchor.constraint(equalToConstant: 36).isActive = true
+    b.heightAnchor.constraint(equalToConstant: 32).isActive = true
+    return b
+  }
+
   private func separator() -> NSView {
     let v = NSView()
     v.wantsLayer = true
@@ -447,6 +503,9 @@ private final class OverlayView: NSView {
 
     var views: [NSView] = [rectB, circleB, windowB, screenB]
     if selection != nil {
+      views.append(separator())
+      views.append(makeButton("video", label: "영상 녹화 (최대 10초)", action: #selector(recordVideoTapped)))
+      views.append(makeGIFButton())
       views.append(separator())
       views.append(makeButton("doc.on.doc", label: "복사", action: #selector(copyTapped)))
       views.append(makeButton("arrow.down.to.line", label: "저장", action: #selector(saveTapped)))
@@ -509,6 +568,8 @@ private final class OverlayView: NSView {
   @objc private func pickRect() { setShape(.rect) }
   @objc private func pickCircle() { setShape(.circle) }
   @objc private func pickWindow() { setShape(.window) }
+  @objc private func recordVideoTapped() { startRecording(.video) }
+  @objc private func recordGIFTapped() { startRecording(.gif) }
   @objc private func copyTapped() { confirm(.copy) }
   @objc private func saveTapped() { confirm(.save) }
   @objc private func closeTapped() { onFinish?(nil) }
@@ -518,7 +579,7 @@ private final class OverlayView: NSView {
       onFinish?(nil)
       return
     }
-    onFinish?(CaptureOutcome(action: .copy, shape: .screen, png: png, width: image.width, height: image.height))
+    onFinish?(.image(CaptureOutcome(action: .copy, shape: .screen, png: png, width: image.width, height: image.height)))
   }
 
   private func setShape(_ s: CaptureShape) {
@@ -538,6 +599,17 @@ private final class OverlayView: NSView {
 
   // MARK: 결과
 
+  /// 고른 영역(원형이어도 둘러싼 사각형)이나 고정한 창을 녹화하라고 넘긴다.
+  private func startRecording(_ kind: RecordingKind) {
+    guard let r = selection, !confirming else { return }
+    confirming = true
+    if let target = locked {
+      onFinish?(.record(RecordRequest(kind: kind, sourceRect: nil, window: target.window)))
+    } else {
+      onFinish?(.record(RecordRequest(kind: kind, sourceRect: r, window: nil)))
+    }
+  }
+
   private func confirm(_ action: CaptureOutcome.Action) {
     guard let r = selection, !confirming else { return }
     if let target = locked {
@@ -551,7 +623,7 @@ private final class OverlayView: NSView {
       return
     }
     let (w, h) = pixelSize(of: r)
-    onFinish?(CaptureOutcome(action: action, shape: shape, png: png, width: w, height: h))
+    onFinish?(.image(CaptureOutcome(action: action, shape: shape, png: png, width: w, height: h)))
   }
 
   /// 창 하나를 가려진 부분까지 포함해 그 창만 찍는다 (그림자는 뺀다).
@@ -571,7 +643,7 @@ private final class OverlayView: NSView {
           onFinish?(nil)
           return
         }
-        onFinish?(CaptureOutcome(action: action, shape: .window, png: png, width: shot.width, height: shot.height))
+        onFinish?(.image(CaptureOutcome(action: action, shape: .window, png: png, width: shot.width, height: shot.height)))
       } catch {
         onFinish?(nil)
       }

@@ -229,4 +229,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get dockClearTooltip => '모두 지우기';
+
+  @override
+  String get thumbSave => '저장';
 }

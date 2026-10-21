@@ -32,6 +32,28 @@ enum CaptureChannel {
             respond(outcome, to: result)
           }
         }
+      case "stopRecording":
+        Task { @MainActor in RecordingSession.stopCurrent() }
+        result(nil)
+      case "copyFile":
+        guard let path = (call.arguments as? [String: Any])?["path"] as? String else {
+          result(FlutterError(code: "bad_args", message: "path is required", details: nil))
+          return
+        }
+        copyFileToPasteboard(path)
+        result(nil)
+      case "saveImage":
+        guard let png = ((call.arguments as? [String: Any])?["png"] as? FlutterStandardTypedData)?.data else {
+          result(FlutterError(code: "bad_args", message: "png is required", details: nil))
+          return
+        }
+        result(savePNG(png))
+      case "saveFile":
+        guard let path = (call.arguments as? [String: Any])?["path"] as? String else {
+          result(FlutterError(code: "bad_args", message: "path is required", details: nil))
+          return
+        }
+        result(saveFile(path))
       case "copyImage":
         guard let args = call.arguments as? [String: Any], let png = (args["png"] as? FlutterStandardTypedData)?.data else {
           result(FlutterError(code: "bad_args", message: "png is required", details: nil))
@@ -59,15 +81,21 @@ enum CaptureChannel {
       var map: [String: Any] = [
         "action": outcome.action.rawValue,
         "shape": outcome.shape.rawValue,
+        "kind": outcome.kind.rawValue,
         "png": FlutterStandardTypedData(bytes: outcome.png),
         "width": outcome.width,
         "height": outcome.height,
       ]
-      switch outcome.action {
-      case .copy:
-        copyToPasteboard(outcome.png)
-      case .save:
-        if let path = savePNG(outcome.png) { map["path"] = path }
+      if outcome.kind == .image {
+        switch outcome.action {
+        case .copy:
+          copyToPasteboard(outcome.png)
+        case .save:
+          if let path = savePNG(outcome.png) { map["path"] = path }
+        }
+      } else {
+        map["path"] = outcome.path
+        map["durationMs"] = outcome.durationMs
       }
       result(map)
     }
@@ -77,6 +105,35 @@ enum CaptureChannel {
     let pb = NSPasteboard.general
     pb.clearContents()
     pb.setData(png, forType: .png)
+  }
+
+  /// 영상·GIF는 파일 자체를 클립보드에 올린다. Finder나 메신저에 붙여 넣으면 파일로 들어간다.
+  private static func copyFileToPasteboard(_ path: String) {
+    let url = URL(fileURLWithPath: path)
+    let pb = NSPasteboard.general
+    pb.clearContents()
+    pb.writeObjects([url as NSURL])
+    if url.pathExtension.lowercased() == "gif", let data = try? Data(contentsOf: url) {
+      pb.setData(data, forType: NSPasteboard.PasteboardType("com.compuserve.gif"))
+    }
+  }
+
+  /// 임시 폴더의 녹화 파일을 사용자 폴더로 옮겨 둔다. 영상은 ~/Movies/Snapdock, GIF는 ~/Pictures/Snapdock.
+  private static func saveFile(_ path: String) -> String? {
+    let source = URL(fileURLWithPath: path)
+    let isGIF = source.pathExtension.lowercased() == "gif"
+    let base: FileManager.SearchPathDirectory = isGIF ? .picturesDirectory : .moviesDirectory
+    guard let root = FileManager.default.urls(for: base, in: .userDomainMask).first else { return nil }
+    let folder = root.appendingPathComponent("Snapdock", isDirectory: true)
+    let target = folder.appendingPathComponent(source.lastPathComponent)
+    do {
+      try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+      if FileManager.default.fileExists(atPath: target.path) { try FileManager.default.removeItem(at: target) }
+      try FileManager.default.copyItem(at: source, to: target)
+      return target.path
+    } catch {
+      return nil
+    }
   }
 
   /// ~/Pictures/Snapdock 아래에 `Snapdock 2026-10-21 14.03.05.png` 형태로 저장한다.
