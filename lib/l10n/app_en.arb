@@ -1,0 +1,127 @@
+{
+  "@@locale": "en",
+  "aboutTooltip": "About",
+  "aboutVersion": "Version {version} (build {build})",
+  "aboutOpenSourceLicenses": "Open Source Licenses",
+  "aboutRepository": "GitHub",
+  "commonClose": "Close",
+  "aboutMenuItem": "About {appName}",
+  "themeMenuTooltip": "Theme",
+  "themeSystem": "Follow System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "languageMenuTooltip": "Language",
+  "languageSystem": "System / 시스템 설정 따르기",
+  "languageSystemShort": "System",
+  "aboutTagline": "Screenshots and 10-second clips, docked within reach",
+  "aboutDescription": "Capture a region, a circle, or a window, or record up to 10 seconds as GIF or MP4. Every capture lands in an always-on-top dock of small thumbnails you can copy or drag out.",
+  "homeEmptyTitle": "Take your first capture",
+  "homeEmptyAction": "Capture",
+  "updateCheckMenuItem": "Check for Updates",
+  "updateChecking": "Checking for updates…",
+  "updateAvailableTitle": "A new version is available",
+  "updateAvailableBody": "{appName} {latest} is available. You have {current}.",
+  "@updateAvailableBody": {
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      },
+      "current": {
+        "type": "String"
+      },
+      "latest": {
+        "type": "String"
+      }
+    }
+  },
+  "updateReleaseNotes": "What's new",
+  "updateNow": "Update now",
+  "updateLater": "Later",
+  "updateSkipVersion": "Skip this version",
+  "updateDownloading": "Downloading…",
+  "updateVerifying": "Verifying the file…",
+  "updateDownloadProgress": "{received} / {total}",
+  "@updateDownloadProgress": {
+    "placeholders": {
+      "received": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "updateCancel": "Cancel",
+  "updateFailedTitle": "Couldn't update",
+  "updateCheckFailedTitle": "Couldn't check for updates",
+  "updateErrorNetwork": "Couldn't reach the update server. Check your internet connection and try again.",
+  "updateErrorChecksum": "The downloaded file didn't pass verification, so it was not installed. Please try again later.",
+  "updateErrorInstall": "Couldn't start the installation.",
+  "updateErrorGeneric": "The update server sent an unexpected response. Please try again later.",
+  "updateUpToDateTitle": "You're up to date",
+  "updateUpToDateBody": "You're using version {version}.",
+  "@updateUpToDateBody": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateUnavailableTitle": "Install it manually",
+  "updateUnavailableBody": "Version {latest} is available, but the app can't install it automatically. Please download it from the release page.",
+  "@updateUnavailableBody": {
+    "placeholders": {
+      "latest": {
+        "type": "String"
+      }
+    }
+  },
+  "updateOpenReleasePage": "Open release page",
+  "updateBrowserDownloadTitle": "Downloading in your browser",
+  "updateBrowserDownloadBody": "Your browser is downloading the new version. Open the DMG and drag {appName} to the Applications folder. If it's running, quit it first and replace the old copy.",
+  "@updateBrowserDownloadBody": {
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "updateMacosOpenedTitle": "The installer window is open",
+  "updateMacosOpenedBody": "In the window that opened, drag {appName} to the Applications folder. If it's running, quit it first and replace the old copy.",
+  "@updateMacosOpenedBody": {
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "updateWindowsInstallTitle": "The installer is open",
+  "updateWindowsInstallBody": "{appName} must quit before it can be updated. Follow the installer's instructions.",
+  "@updateWindowsInstallBody": {
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "updateQuitApp": "Quit {appName}",
+  "@updateQuitApp": {
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "updateLinuxInstallTitle": "Ready to install",
+  "updateLinuxInstallBody": "{appName} will quit and install the update, then start again automatically.",
+  "@updateLinuxInstallBody": {
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "updateQuitAndInstall": "Quit and install",
+  "updateBusyTitle": "Can't update right now",
+  "updateBusyBody": "A task is in progress. Please try again when it has finished."
+}
