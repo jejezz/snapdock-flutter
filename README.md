@@ -9,7 +9,7 @@
 <h1 align="center">Snapdock</h1>
 
 <p align="center">
-  A free, open-source <b>screenshot and screen recording tool for macOS and Windows</b> — capture a region, circle, or window, record up to 10 seconds as GIF or MP4, and keep every capture in an always-on-top thumbnail dock.
+  A free, open-source <b>screenshot and screen recording tool for macOS and Windows</b> — capture a region, circle, or window, record short clips as GIF or MP4, and keep every capture in an always-on-top thumbnail dock.
 </p>
 
 <p align="center">
@@ -25,19 +25,20 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/demo.gif" width="720" alt="Snapdock demo: {{TODO: what the GIF shows, e.g. open, scan, clean}}">
+  <img src="docs/screenshots/demo.gif" width="720" alt="Snapdock demo: press the shortcut, drag a region, and the capture lands in the dock">
 </p>
 
 ## Features
 
-- **{{TODO: Feature}}** — {{TODO: what it does, concretely (names, numbers, formats)}}
-- **{{TODO: Feature}}** — {{TODO: …}}
-- **{{TODO: Feature}}** — {{TODO: …}}
+- **Four ways to capture** — rectangle, circle (a PNG that is transparent outside the circle), a single window (even the parts hidden behind other windows), or the whole screen
+- **Short recordings** — record a region or a window as H.264 MP4 or GIF; 10 seconds by default, adjustable from 3 to 60 seconds in Settings, with a countdown pill and a stop button
+- **A dock for every capture** — each capture is its own thumbnail (S 32 px, M 44 px, L 64 px). Click to copy, drag it into any app, right-click to save or delete. The dock stays on top, folds into a pill, and remembers your last 30 captures across restarts
+- **One shortcut** — `⌥⇧S` on macOS, `Alt+Shift+S` on Windows opens the selector on the monitor your cursor is on. The dock and the recording pill never show up in your captures
 - **Light & dark, English & 한국어** — follows the system, or pick one in the toolbar
 
 <p align="center">
-  <img src="docs/screenshots/home.png" width="360" alt="{{TODO: screen 1}}">
-  <img src="docs/screenshots/detail.png" width="360" alt="{{TODO: screen 2}}">
+  <img src="docs/screenshots/home.png" width="360" alt="The thumbnail dock">
+  <img src="docs/screenshots/detail.png" width="360" alt="The region selector with its toolbar">
 </p>
 
 ## Install
@@ -46,23 +47,28 @@ Download from [**Releases**](https://github.com/jejezz/snapdock-flutter/releases
 
 | OS | File |
 |---|---|
-| macOS 12.0+ | `Snapdock-<version>-macos-universal.dmg` — open it and drag Snapdock to Applications |
+| macOS 14.0+ | `Snapdock-<version>-macos-universal.dmg` — open it and drag Snapdock to Applications |
 | Windows 10/11 (x64) | `Snapdock-<version>-windows-x64-setup.exe` |
 
 **Windows:** the installer isn't code-signed yet, so SmartScreen says "Windows protected your PC" — choose **More info → Run anyway**.
 
 ## How it works
 
-{{TODO: 2–4 sentences for the curious — the one interesting technical choice (e.g. "Dart drives the UI; a 100-line Swift bridge covers Trash and Full Disk Access"). Delete this section if there is nothing interesting to say.}}
+Flutter draws the dock and Settings; capture and recording are native code behind one MethodChannel (`art.zoomon.snapdock/capture`). On macOS that is ScreenCaptureKit and AVFoundation. On Windows the selector freezes the monitor with GDI, windows are grabbed with `PrintWindow`, and recordings go through Media Foundation (MP4) or a small built-in GIF encoder. The dock and the recording pill are excluded from capture by the OS, so they never appear in the result.
+
+macOS asks for the **Screen Recording** permission the first time you capture. Windows needs no permission.
 
 ## Development
 
 ```bash
 flutter pub get
-flutter run -d macos
+flutter gen-l10n
+flutter run -d macos     # or: flutter run -d windows
 ```
 
-{{TODO: Anything else needed to build (native tools, env vars). Link docs/ for architecture: [ARCHITECTURE.md](ARCHITECTURE.md), [UI_UX.md](UI_UX.md).}}
+- macOS: Xcode with the macOS 14 SDK.
+- Windows: Visual Studio 2022 with the "Desktop development with C++" workload (the Windows SDK provides GDI+ and Media Foundation). Windows 10 version 2004 or later.
+- Project notes live in [CLAUDE.md](CLAUDE.md); the Windows native layer and the channel contract are described in [docs/WINDOWS.md](docs/WINDOWS.md).
 
 Releasing: `scripts/bump-version.sh patch`, merge, then tag `vX.Y.Z` — CI builds and publishes every platform. Rules: [application-release-templates/conventions](https://github.com/jejezz/application-release-templates/tree/main/conventions).
 

@@ -9,7 +9,7 @@
 <h1 align="center">Snapdock</h1>
 
 <p align="center">
-  <b>macOS·Windows용 무료 오픈소스 스크린샷·화면 녹화 도구</b> — 사각형·원형·창 단위로 캡처하고 최대 10초를 GIF나 MP4로 녹화하며, 모든 캡처를 항상 위에 떠 있는 썸네일 독에 모아 둡니다.
+  <b>macOS·Windows용 무료 오픈소스 스크린샷·화면 녹화 도구</b> — 사각형·원형·창 단위로 캡처하고 짧은 영상을 GIF나 MP4로 녹화하며, 모든 캡처를 항상 위에 떠 있는 썸네일 독에 모아 둡니다.
 </p>
 
 <p align="center">
@@ -25,19 +25,20 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/demo.gif" width="720" alt="Snapdock 데모: {{TODO: GIF가 보여주는 흐름}}">
+  <img src="docs/screenshots/demo.gif" width="720" alt="Snapdock 데모: 단축키를 누르고 영역을 끌면 캡처가 독에 들어옵니다">
 </p>
 
 ## 기능
 
-- **{{TODO: 기능}}** — {{TODO: 무엇을 하는지 구체적으로 (이름, 숫자, 형식)}}
-- **{{TODO: 기능}}** — {{TODO: …}}
-- **{{TODO: 기능}}** — {{TODO: …}}
+- **네 가지 캡처** — 사각형, 원형(바깥이 투명한 PNG), 창 하나(다른 창에 가려진 부분까지), 화면 전체
+- **짧은 녹화** — 영역이나 창을 H.264 MP4 또는 GIF로 녹화합니다. 기본 10초, 설정에서 3~60초로 바꿀 수 있고 카운트다운 알약과 정지 단추가 뜹니다
+- **캡처마다 썸네일 독** — 캡처는 항목마다 따로 쌓입니다(S 32px, M 44px, L 64px). 클릭하면 복사, 끌면 다른 앱에 붙여넣기, 우클릭으로 저장·삭제. 독은 항상 위에 떠 있고 알약으로 접히며, 다시 켜도 최근 30개가 돌아옵니다
+- **단축키 하나** — macOS `⌥⇧S`, Windows `Alt+Shift+S`로 커서가 있는 모니터에서 선택을 시작합니다. 독과 녹화 알약은 캡처에 찍히지 않습니다
 - **라이트·다크, 한국어·English** — 시스템 설정을 따르거나 툴바에서 고를 수 있습니다
 
 <p align="center">
-  <img src="docs/screenshots/home.png" width="360" alt="{{TODO: 화면 1}}">
-  <img src="docs/screenshots/detail.png" width="360" alt="{{TODO: 화면 2}}">
+  <img src="docs/screenshots/home.png" width="360" alt="썸네일 독">
+  <img src="docs/screenshots/detail.png" width="360" alt="영역 선택 화면과 툴바">
 </p>
 
 ## 설치
@@ -46,23 +47,28 @@
 
 | OS | 파일 |
 |---|---|
-| macOS 12.0 이상 | `Snapdock-<버전>-macos-universal.dmg` — 열어서 앱을 Applications 폴더로 끌어다 놓으세요 |
+| macOS 14.0 이상 | `Snapdock-<버전>-macos-universal.dmg` — 열어서 앱을 Applications 폴더로 끌어다 놓으세요 |
 | Windows 10/11 (x64) | `Snapdock-<버전>-windows-x64-setup.exe` |
 
 **Windows:** 설치 프로그램에 아직 코드 서명이 없어서 SmartScreen이 "Windows의 PC 보호" 창을 띄웁니다. **추가 정보 → 실행**을 누르세요.
 
 ## 동작 방식
 
-{{TODO: 궁금한 사람을 위한 2~4문장 — 흥미로운 기술적 선택 한 가지. 말할 것이 없으면 이 절을 지웁니다.}}
+독과 설정은 Flutter가 그리고, 캡처·녹화는 MethodChannel 하나(`art.zoomon.snapdock/capture`) 뒤의 네이티브 코드가 맡습니다. macOS는 ScreenCaptureKit과 AVFoundation, Windows는 GDI로 모니터를 얼려 선택하고 창은 `PrintWindow`로, 녹화는 Media Foundation(MP4)과 직접 만든 GIF 인코더로 처리합니다. 독과 녹화 알약은 OS 기능으로 캡처에서 제외해서 결과물에 찍히지 않습니다.
+
+macOS는 처음 캡처할 때 **화면 기록** 권한을 요청합니다. Windows는 권한이 필요 없습니다.
 
 ## 개발
 
 ```bash
 flutter pub get
-flutter run -d macos
+flutter gen-l10n
+flutter run -d macos     # 또는: flutter run -d windows
 ```
 
-{{TODO: 빌드에 더 필요한 것(네이티브 도구, 환경 변수). 구조 문서 링크: [ARCHITECTURE.md](ARCHITECTURE.md), [UI_UX.md](UI_UX.md).}}
+- macOS: macOS 14 SDK가 있는 Xcode.
+- Windows: Visual Studio 2022의 "C++를 사용한 데스크톱 개발" 워크로드(Windows SDK에 GDI+와 Media Foundation이 들어 있습니다). Windows 10 버전 2004 이상.
+- 프로젝트 메모는 [CLAUDE.md](CLAUDE.md), Windows 네이티브 구현과 채널 규격은 [docs/WINDOWS.md](docs/WINDOWS.md)에 있습니다.
 
 릴리스: `scripts/bump-version.sh patch` → 병합 → `vX.Y.Z` 태그. CI가 모든 플랫폼을 빌드해서 올립니다. 규칙: [application-release-templates/conventions](https://github.com/jejezz/application-release-templates/tree/main/conventions).
 
