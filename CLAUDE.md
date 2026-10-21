@@ -28,6 +28,10 @@ conventions-v1 — jejezz/application-release-templates (`conventions/README.md`
 - macOS는 "화면 기록" 권한이 필요하다. 디버그 빌드는 `.dev` 번들 ID를 써서 릴리스와 권한을 공유하지 않는다.
 - 영역 선택 오버레이는 전체 화면 투명 네이티브 창으로 만든다.
 
+## Windows
+
+개발은 Windows에서 이어진다. 네이티브 캡처(채널 `art.zoomon.snapdock/capture`)가 아직 macOS에만 있다. 해야 할 일, 채널 규격, 확인 목록은 [`docs/WINDOWS.md`](docs/WINDOWS.md)에 있다.
+
 ## 구현 현황
 
 - 되는 것(macOS): 전역 단축키 ⌥⇧S → 마우스가 있는 디스플레이를 얼린 화면 위에서 영역 선택(8개 앵커, 이동, 크기 배지, 사각형/원형 전환) → 복사 또는 저장(~/Pictures/Snapdock) → 독에 항목 추가. 독 모드는 항상 위 작은 창이며 썸네일 클릭 시 복사, 올리면 ✕, 우클릭 메뉴, S/M/L 크기 순환.
