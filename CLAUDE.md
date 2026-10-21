@@ -43,3 +43,9 @@ conventions-v1 — jejezz/application-release-templates (`conventions/README.md`
 
 - 앱 아이콘의 소품 글리프는 임시 그림(`assets/icon/source_glyph.png`). 고양이는 그대로 두고 Icons8 글리프로 교체한다.
 - README의 Features, How it works, 스크린샷, 데모 GIF는 기능이 생긴 뒤 채운다(첫 정식 릴리스 전 필수).
+- 멀티 모니터 확인은 개발자 환경에 모니터가 하나뿐이라 미뤄 두었다. 모니터를 더 쓸 수 있을 때 확인한다:
+  - ⌥⇧S가 커서가 있는 모니터에서 오버레이를 연다.
+  - 독이 커서가 있는 모니터의 위쪽 가운데에 뜬다.
+  - 모니터마다 배율(Retina/비Retina)이 달라도 잘린 이미지 크기가 배지 숫자와 맞는다.
+  - 녹화 영역이 보조 모니터에서도 고른 위치와 같다.
+- 영역 녹화, 창 녹화, GIF 화질은 macOS에서 직접 확인했다(모니터 하나).
