@@ -420,7 +420,7 @@ class _CaptureBar extends StatelessWidget {
         ),
         const SizedBox(width: AppSpacing.md),
         Text(
-          l10n.captureHotkeyHint,
+          l10n.captureHotkeyHint(captureShortcutLabel),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),

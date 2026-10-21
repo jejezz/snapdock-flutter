@@ -194,7 +194,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'A task is in progress. Please try again when it has finished.';
 
   @override
-  String get captureHotkeyHint => 'Shortcut ⌥⇧S';
+  String captureHotkeyHint(String keys) {
+    return 'Shortcut $keys';
+  }
 
   @override
   String get capturePermissionTitle => 'Screen recording permission needed';

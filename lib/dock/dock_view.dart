@@ -147,7 +147,7 @@ class _DockViewState extends State<DockView> {
                     child: Padding(
                       padding: const EdgeInsets.only(left: 26),
                       child: Text(
-                        hint ?? l10n.captureHotkeyHint,
+                        hint ?? l10n.captureHotkeyHint(captureShortcutLabel),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(

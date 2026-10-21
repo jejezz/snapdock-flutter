@@ -1,5 +1,10 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+
+/// 전역 캡처 단축키의 표시 문구. 등록은 lib/main.dart(Alt+Shift+S)에서 한다.
+String get captureShortcutLabel => Platform.isMacOS ? '⌥⇧S' : 'Alt+Shift+S';
 
 enum CaptureShape { rect, circle, window, screen }
 

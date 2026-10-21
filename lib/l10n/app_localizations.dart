@@ -413,8 +413,8 @@ abstract class AppLocalizations {
   /// No description provided for @captureHotkeyHint.
   ///
   /// In ko, this message translates to:
-  /// **'단축키 ⌥⇧S'**
-  String get captureHotkeyHint;
+  /// **'단축키 {keys}'**
+  String captureHotkeyHint(String keys);
 
   /// No description provided for @capturePermissionTitle.
   ///

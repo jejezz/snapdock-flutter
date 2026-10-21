@@ -192,7 +192,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get updateBusyBody => '작업이 진행 중입니다. 끝난 뒤에 다시 시도해 주세요.';
 
   @override
-  String get captureHotkeyHint => '단축키 ⌥⇧S';
+  String captureHotkeyHint(String keys) {
+    return '단축키 $keys';
+  }
 
   @override
   String get capturePermissionTitle => '화면 기록 권한이 필요합니다';
