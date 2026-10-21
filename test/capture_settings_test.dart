@@ -54,6 +54,19 @@ void main() {
     expect((await CaptureSettings.load(CaptureService())).imageDir, isNull);
   });
 
+  test('remembers dock mode and thumbnail size', () async {
+    final settings = await CaptureSettings.load(CaptureService());
+    expect(settings.dockMode, isFalse);
+    expect(settings.dockSizeIndex, 1);
+
+    await settings.setDockMode(true);
+    await settings.setDockSizeIndex(2);
+
+    final reloaded = await CaptureSettings.load(CaptureService());
+    expect(reloaded.dockMode, isTrue);
+    expect(reloaded.dockSizeIndex, 2);
+  });
+
   test('a platform without native capture does not break loading', () async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
       const MethodChannel('art.zoomon.snapdock/capture'),

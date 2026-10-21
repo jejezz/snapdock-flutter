@@ -37,6 +37,8 @@ conventions-v1 — jejezz/application-release-templates (`conventions/README.md`
 - 아직 없는 것: 독에서 다른 앱으로 끌어다 놓기, 접힘(알약) 상태, 캡처 효과(번쩍임·날아가기), 단축키 설정, 캡처 목록 영속화, Windows 네이티브 캡처(채널 `art.zoomon.snapdock/capture`를 Windows에서도 구현해야 한다).
 - 네이티브: `macos/Runner/CaptureOverlay.swift`(오버레이), `CaptureChannel.swift`(채널). Flutter: `lib/capture/`, `lib/dock/`.
 
+- 독 모드: 마지막에 독으로 끝내면 독으로 시작하고 썸네일 크기(S/M/L)도 기억한다(shared_preferences). 독은 항상 커서가 있는 모니터의 위쪽 가운데(여백 12px)에서 시작하고, 썸네일이 늘면 가로 가운데를 지키며 자란다.
+
 ## 남은 일
 
 - 앱 아이콘의 소품 글리프는 임시 그림(`assets/icon/source_glyph.png`). 고양이는 그대로 두고 Icons8 글리프로 교체한다.

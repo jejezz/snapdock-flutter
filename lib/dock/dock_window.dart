@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:screen_retriever/screen_retriever.dart';
+
 import 'package:window_manager/window_manager.dart';
 
 /// 썸네일 크기. 목업의 S 32px, M 44px(기본), L 64px.
@@ -34,6 +36,9 @@ abstract final class DockWindow {
     );
   }
 
+  /// 독 창과 화면 위쪽 사이의 간격.
+  static const topMargin = 12.0;
+
   static Future<void> enter(Size size) async {
     await windowManager.setMinimumSize(const Size(100, 40));
     await windowManager.setResizable(false);
@@ -42,11 +47,41 @@ abstract final class DockWindow {
       TitleBarStyle.hidden,
       windowButtonVisibility: false,
     );
-    await windowManager.setSize(size, animate: true);
+    await windowManager.setSize(size);
+    await windowManager.setPosition(await _topCenter(size));
   }
 
-  static Future<void> resize(Size size) =>
-      windowManager.setSize(size, animate: true);
+  /// 커서가 있는 모니터의 위쪽 가운데. 메뉴 막대나 Dock을 뺀 영역 기준이다.
+  static Future<Offset> _topCenter(Size size) async {
+    final cursor = await screenRetriever.getCursorScreenPoint();
+    final displays = await screenRetriever.getAllDisplays();
+    Display? target;
+    for (final d in displays) {
+      final origin = d.visiblePosition ?? Offset.zero;
+      final area = d.visibleSize ?? d.size;
+      // 커서가 메뉴 막대 위에 있어도 그 모니터로 본다.
+      final rect = Rect.fromLTWH(origin.dx, origin.dy - 60, area.width, area.height + 120);
+      if (rect.contains(cursor)) {
+        target = d;
+        break;
+      }
+    }
+    target ??= await screenRetriever.getPrimaryDisplay();
+    final origin = target.visiblePosition ?? Offset.zero;
+    final area = target.visibleSize ?? target.size;
+    return Offset(origin.dx + (area.width - size.width) / 2, origin.dy + topMargin);
+  }
+
+  /// 썸네일이 늘고 줄 때 가로 가운데를 지킨다. 사용자가 독을 다른 곳으로 옮겼어도 그 자리에서 양옆으로 자란다.
+  static Future<void> resize(Size size) async {
+    final position = await windowManager.getPosition();
+    final current = await windowManager.getSize();
+    final next = Offset(
+      position.dx + (current.width - size.width) / 2,
+      position.dy,
+    );
+    await windowManager.setBounds(null, position: next, size: size);
+  }
 
   static Future<void> exit() async {
     await windowManager.setAlwaysOnTop(false);

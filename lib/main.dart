@@ -38,6 +38,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   registerExtraLicenses();
 
+  final captureService = CaptureService();
+  final captureSettings = await CaptureSettings.load(captureService);
+
   if (_isDesktop) {
     await windowManager.ensureInitialized();
     await hotKeyManager.unregisterAll();
@@ -49,14 +52,17 @@ Future<void> main() async {
       title: AppIdentity.displayName,
     );
     await windowManager.waitUntilReadyToShow(options, () async {
+      // 마지막에 독으로 끝냈다면 독으로 시작한다 (커서가 있는 모니터의 위쪽 가운데).
+      if (captureSettings.dockMode) {
+        final size = DockSize.values[captureSettings.dockSizeIndex.clamp(0, DockSize.values.length - 1)];
+        await DockWindow.enter(DockWindow.sizeFor(count: 0, size: size));
+      }
       await windowManager.show();
       await windowManager.focus();
     });
   }
 
   final settings = await AppSettings.load();
-  final captureService = CaptureService();
-  final captureSettings = await CaptureSettings.load(captureService);
   // 데스크톱이 아니거나 UPDATE_SERVER 가 비어 있으면 null — 업데이트 확인 없음.
   final updates = await UpdateService.create();
   // UpdateScope 는 MaterialApp 위에 둔다 — 정보 창이 이것을 읽어 "업데이트 확인" 단추를 붙인다.
@@ -191,8 +197,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool _dock = false;
-  DockSize _dockSize = DockSize.medium;
+  late bool _dock = widget.captureSettings.dockMode;
+  late DockSize _dockSize = DockSize.values[widget.captureSettings.dockSizeIndex.clamp(0, DockSize.values.length - 1)];
   int _lastCount = 0;
 
   CaptureController get _captures => widget.captures;
@@ -221,6 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _enterDock() async {
     setState(() => _dock = true);
+    widget.captureSettings.setDockMode(true);
     await DockWindow.enter(
       DockWindow.sizeFor(count: _captures.items.length, size: _dockSize),
     );
@@ -228,11 +235,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _exitDock() async {
     setState(() => _dock = false);
+    widget.captureSettings.setDockMode(false);
     await DockWindow.exit();
   }
 
   void _cycleDockSize() {
     setState(() => _dockSize = _dockSize.next);
+    widget.captureSettings.setDockSizeIndex(_dockSize.index);
     DockWindow.resize(
       DockWindow.sizeFor(count: _captures.items.length, size: _dockSize),
     );

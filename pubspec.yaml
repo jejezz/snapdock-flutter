@@ -48,6 +48,7 @@ dependencies:
       ref: updater-v0.1.0
   hotkey_manager: ^0.2.3
   file_selector: ^1.1.0
+  screen_retriever: ^0.2.2
 
 dev_dependencies:
   flutter_test:

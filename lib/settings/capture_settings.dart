@@ -15,6 +15,8 @@ class CaptureSettings extends ChangeNotifier {
   static const _kSeconds = 'record_max_seconds';
   static const _kImageDir = 'image_folder';
   static const _kVideoDir = 'video_folder';
+  static const _kDockMode = 'dock_mode';
+  static const _kDockSize = 'dock_size';
 
   final SharedPreferences _prefs;
   final CaptureService _service;
@@ -22,6 +24,16 @@ class CaptureSettings extends ChangeNotifier {
   int _maxSeconds;
   String? _imageDir;
   String? _videoDir;
+
+  /// 마지막으로 쓴 모드가 독이었는가. 켜면 독으로 시작한다.
+  bool get dockMode => _prefs.getBool(_kDockMode) ?? false;
+
+  /// 독 썸네일 크기의 순번(0 작게, 1 보통, 2 크게).
+  int get dockSizeIndex => _prefs.getInt(_kDockSize) ?? 1;
+
+  Future<void> setDockMode(bool value) => _prefs.setBool(_kDockMode, value);
+
+  Future<void> setDockSizeIndex(int index) => _prefs.setInt(_kDockSize, index);
 
   /// 녹화 최대 길이(초).
   int get maxSeconds => _maxSeconds;
