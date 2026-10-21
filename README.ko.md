@@ -37,8 +37,11 @@
 - **라이트·다크, 한국어·English** — 시스템 설정을 따르거나 툴바에서 고를 수 있습니다
 
 <p align="center">
-  <img src="docs/screenshots/home.png" width="360" alt="썸네일 독">
-  <img src="docs/screenshots/detail.png" width="360" alt="영역 선택 화면과 툴바">
+  <img src="docs/screenshots/home.png" width="720" alt="메인 창에 쌓인 캡처 (라이트·다크)">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/detail.png" width="720" alt="항상 위 독과 알약으로 접은 모습 (라이트·다크)">
 </p>
 
 ## 설치
