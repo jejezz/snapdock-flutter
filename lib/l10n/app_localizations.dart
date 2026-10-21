@@ -511,6 +511,84 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'저장 폴더 열기'**
   String get openFolderTooltip;
+
+  /// No description provided for @settingsTooltip.
+  ///
+  /// In ko, this message translates to:
+  /// **'설정'**
+  String get settingsTooltip;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'설정'**
+  String get settingsTitle;
+
+  /// No description provided for @settingsRecordingSection.
+  ///
+  /// In ko, this message translates to:
+  /// **'녹화'**
+  String get settingsRecordingSection;
+
+  /// No description provided for @settingsRecordingLength.
+  ///
+  /// In ko, this message translates to:
+  /// **'최대 녹화 시간'**
+  String get settingsRecordingLength;
+
+  /// No description provided for @settingsSecondsValue.
+  ///
+  /// In ko, this message translates to:
+  /// **'{seconds}초'**
+  String settingsSecondsValue(int seconds);
+
+  /// No description provided for @settingsGifNote.
+  ///
+  /// In ko, this message translates to:
+  /// **'GIF는 길수록 용량이 커집니다.'**
+  String get settingsGifNote;
+
+  /// No description provided for @settingsFoldersSection.
+  ///
+  /// In ko, this message translates to:
+  /// **'저장 위치'**
+  String get settingsFoldersSection;
+
+  /// No description provided for @settingsImageFolder.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미지 (PNG, GIF)'**
+  String get settingsImageFolder;
+
+  /// No description provided for @settingsVideoFolder.
+  ///
+  /// In ko, this message translates to:
+  /// **'영상 (MP4)'**
+  String get settingsVideoFolder;
+
+  /// No description provided for @settingsImageFolderDefault.
+  ///
+  /// In ko, this message translates to:
+  /// **'기본 · 사진 폴더의 Snapdock'**
+  String get settingsImageFolderDefault;
+
+  /// No description provided for @settingsVideoFolderDefault.
+  ///
+  /// In ko, this message translates to:
+  /// **'기본 · 동영상 폴더의 Snapdock'**
+  String get settingsVideoFolderDefault;
+
+  /// No description provided for @settingsChooseFolder.
+  ///
+  /// In ko, this message translates to:
+  /// **'폴더 선택'**
+  String get settingsChooseFolder;
+
+  /// No description provided for @settingsResetFolder.
+  ///
+  /// In ko, this message translates to:
+  /// **'기본값'**
+  String get settingsResetFolder;
 }
 
 class _AppLocalizationsDelegate

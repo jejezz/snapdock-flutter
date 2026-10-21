@@ -476,7 +476,7 @@ private final class OverlayView: NSView {
     let b = NSButton(title: "GIF", target: self, action: #selector(recordGIFTapped))
     b.isBordered = false
     b.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
-    b.toolTip = "GIF 녹화 (최대 10초)"
+    b.toolTip = "GIF 녹화 (최대 \(Int(CaptureConfig.maxRecordingSeconds))초)"
     b.widthAnchor.constraint(equalToConstant: 36).isActive = true
     b.heightAnchor.constraint(equalToConstant: 32).isActive = true
     return b
@@ -504,7 +504,7 @@ private final class OverlayView: NSView {
     var views: [NSView] = [rectB, circleB, windowB, screenB]
     if selection != nil {
       views.append(separator())
-      views.append(makeButton("video", label: "영상 녹화 (최대 10초)", action: #selector(recordVideoTapped)))
+      views.append(makeButton("video", label: "영상 녹화 (최대 \(Int(CaptureConfig.maxRecordingSeconds))초)", action: #selector(recordVideoTapped)))
       views.append(makeGIFButton())
       views.append(separator())
       views.append(makeButton("doc.on.doc", label: "복사", action: #selector(copyTapped)))

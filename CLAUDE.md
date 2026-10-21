@@ -32,7 +32,8 @@ conventions-v1 — jejezz/application-release-templates (`conventions/README.md`
 
 - 되는 것(macOS): 전역 단축키 ⌥⇧S → 마우스가 있는 디스플레이를 얼린 화면 위에서 영역 선택(8개 앵커, 이동, 크기 배지, 사각형/원형 전환) → 복사 또는 저장(~/Pictures/Snapdock) → 독에 항목 추가. 독 모드는 항상 위 작은 창이며 썸네일 클릭 시 복사, 올리면 ✕, 우클릭 메뉴, S/M/L 크기 순환.
 - 창 선택(마우스 아래 창을 강조하고 클릭하면 가려진 부분까지 그 창만 캡처)과 화면 전체(툴바 단추)도 된다.
-- 영상·GIF 녹화(macOS): 영역이나 창을 고른 뒤 툴바의 영상/GIF 단추. 최대 10초(`RecordingLimits.maxSeconds`, `ScreenRecorder.swift`), 화면 위쪽 알약에 카운트다운과 정지 단추, 단축키를 한 번 더 눌러도 멈춘다. MP4는 H.264, GIF는 15fps로 녹화한 MP4를 10fps·가로 720px 이하로 변환한다. 파일은 임시 폴더에 두고 저장하면 ~/Movies/Snapdock(영상), ~/Pictures/Snapdock(GIF)으로 복사한다.
+- 영상·GIF 녹화(macOS): 영역이나 창을 고른 뒤 툴바의 영상/GIF 단추. 최대 길이는 설정에서 3~60초(기본 10초, `CaptureConfig.maxRecordingSeconds`, `ScreenRecorder.swift`), 화면 위쪽 알약에 카운트다운과 정지 단추, 단축키를 한 번 더 눌러도 멈춘다. MP4는 H.264, GIF는 15fps로 녹화한 MP4를 10fps·가로 720px 이하로 변환한다. 파일은 임시 폴더에 두고 저장하면 저장 폴더로 복사한다.
+- 설정 창(앱 바의 톱니): 녹화 길이, 이미지(PNG·GIF) 저장 폴더, 영상(MP4) 저장 폴더. `lib/settings/capture_settings.dart`가 shared_preferences에 저장하고 시작할 때와 바뀔 때마다 채널 `configure`로 네이티브에 보낸다. 폴더가 비어 있으면 기본값 ~/Pictures/Snapdock, ~/Movies/Snapdock.
 - 아직 없는 것: 독에서 다른 앱으로 끌어다 놓기, 접힘(알약) 상태, 캡처 효과(번쩍임·날아가기), 단축키 설정, 캡처 목록 영속화, Windows 네이티브 캡처(채널 `art.zoomon.snapdock/capture`를 Windows에서도 구현해야 한다).
 - 네이티브: `macos/Runner/CaptureOverlay.swift`(오버레이), `CaptureChannel.swift`(채널). Flutter: `lib/capture/`, `lib/dock/`.
 

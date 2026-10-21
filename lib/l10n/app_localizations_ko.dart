@@ -241,4 +241,45 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get openFolderTooltip => '저장 폴더 열기';
+
+  @override
+  String get settingsTooltip => '설정';
+
+  @override
+  String get settingsTitle => '설정';
+
+  @override
+  String get settingsRecordingSection => '녹화';
+
+  @override
+  String get settingsRecordingLength => '최대 녹화 시간';
+
+  @override
+  String settingsSecondsValue(int seconds) {
+    return '$seconds초';
+  }
+
+  @override
+  String get settingsGifNote => 'GIF는 길수록 용량이 커집니다.';
+
+  @override
+  String get settingsFoldersSection => '저장 위치';
+
+  @override
+  String get settingsImageFolder => '이미지 (PNG, GIF)';
+
+  @override
+  String get settingsVideoFolder => '영상 (MP4)';
+
+  @override
+  String get settingsImageFolderDefault => '기본 · 사진 폴더의 Snapdock';
+
+  @override
+  String get settingsVideoFolderDefault => '기본 · 동영상 폴더의 Snapdock';
+
+  @override
+  String get settingsChooseFolder => '폴더 선택';
+
+  @override
+  String get settingsResetFolder => '기본값';
 }

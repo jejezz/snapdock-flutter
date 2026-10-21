@@ -140,5 +140,25 @@
   "thumbSave": "Save",
   "openPicturesFolder": "Open Pictures folder",
   "openMoviesFolder": "Open Movies folder",
-  "openFolderTooltip": "Open save folder"
+  "openFolderTooltip": "Open save folder",
+  "settingsTooltip": "Settings",
+  "settingsTitle": "Settings",
+  "settingsRecordingSection": "Recording",
+  "settingsRecordingLength": "Maximum recording length",
+  "settingsSecondsValue": "{seconds} s",
+  "settingsGifNote": "Longer GIFs make larger files.",
+  "settingsFoldersSection": "Save locations",
+  "settingsImageFolder": "Images (PNG, GIF)",
+  "settingsVideoFolder": "Videos (MP4)",
+  "settingsImageFolderDefault": "Default · Snapdock in Pictures",
+  "settingsVideoFolderDefault": "Default · Snapdock in Movies",
+  "settingsChooseFolder": "Choose folder",
+  "settingsResetFolder": "Default",
+  "@settingsSecondsValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  }
 }

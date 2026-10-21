@@ -74,6 +74,10 @@ class CaptureService {
   Future<String?> saveFile(String path) =>
       _channel.invokeMethod<String>('saveFile', {'path': path});
 
+  /// 설정을 네이티브에 알린다. 폴더가 null이면 기본 위치(사진/동영상 폴더의 Snapdock)를 쓴다.
+  Future<void> configure({required int maxSeconds, String? imageDir, String? videoDir}) =>
+      _channel.invokeMethod<void>('configure', {'maxSeconds': maxSeconds, 'imageDir': imageDir, 'videoDir': videoDir});
+
   Future<void> openSaveFolder(SaveFolder folder) => _channel.invokeMethod<void>('openFolder', {'kind': folder.name});
 
   /// 녹화 중이면 일찍 끝낸다. 아니면 아무 일도 없다.

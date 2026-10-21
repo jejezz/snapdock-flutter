@@ -23,6 +23,8 @@ import 'dock/dock_view.dart';
 import 'dock/dock_window.dart';
 import 'l10n/app_localizations.dart';
 import 'settings/app_settings.dart';
+import 'settings/capture_settings.dart';
+import 'settings/settings_dialog.dart';
 import 'settings/settings_menus.dart';
 import 'theme/app_theme.dart';
 import 'update/update_scope.dart';
@@ -53,21 +55,25 @@ Future<void> main() async {
   }
 
   final settings = await AppSettings.load();
+  final captureService = CaptureService();
+  final captureSettings = await CaptureSettings.load(captureService);
   // 데스크톱이 아니거나 UPDATE_SERVER 가 비어 있으면 null — 업데이트 확인 없음.
   final updates = await UpdateService.create();
   // UpdateScope 는 MaterialApp 위에 둔다 — 정보 창이 이것을 읽어 "업데이트 확인" 단추를 붙인다.
   runApp(
     UpdateScope(
       service: updates,
-      child: App(settings: settings, updates: updates),
+      child: App(settings: settings, updates: updates, captureService: captureService, captureSettings: captureSettings),
     ),
   );
 }
 
 class App extends StatefulWidget {
-  const App({super.key, required this.settings, this.updates});
+  const App({super.key, required this.settings, this.updates, required this.captureService, required this.captureSettings});
 
   final AppSettings settings;
+  final CaptureService captureService;
+  final CaptureSettings captureSettings;
   final UpdateService? updates;
 
   @override
@@ -76,7 +82,7 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> with WidgetsBindingObserver {
   final _navigatorKey = GlobalKey<NavigatorState>();
-  final _captures = CaptureController(CaptureService());
+  late final _captures = CaptureController(widget.captureService);
 
   @override
   void initState() {
@@ -165,7 +171,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
             onCheckForUpdates: widget.updates == null ? null : _checkForUpdates,
             child: child!,
           ),
-          home: HomeScreen(onAbout: _showAbout, captures: _captures),
+          home: HomeScreen(onAbout: _showAbout, captures: _captures, captureSettings: widget.captureSettings),
         ),
       ),
     );
@@ -174,10 +180,11 @@ class _AppState extends State<App> with WidgetsBindingObserver {
 
 /// 홈 화면. 캡처 목록을 보여 주고, 독 모드로 줄일 수 있다.
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.onAbout, required this.captures});
+  const HomeScreen({super.key, required this.onAbout, required this.captures, required this.captureSettings});
 
   final VoidCallback onAbout;
   final CaptureController captures;
+  final CaptureSettings captureSettings;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -260,6 +267,11 @@ class _HomeScreenState extends State<HomeScreen> {
             tooltip: l10n.dockShrinkTooltip,
             icon: const Icon(Icons.close_fullscreen_rounded),
             onPressed: _enterDock,
+          ),
+          IconButton(
+            tooltip: l10n.settingsTooltip,
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => showCaptureSettingsDialog(context, widget.captureSettings),
           ),
           const ThemeMenuButton(),
           const LanguageMenuButton(),

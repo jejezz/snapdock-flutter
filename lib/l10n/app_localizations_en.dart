@@ -244,4 +244,45 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get openFolderTooltip => 'Open save folder';
+
+  @override
+  String get settingsTooltip => 'Settings';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsRecordingSection => 'Recording';
+
+  @override
+  String get settingsRecordingLength => 'Maximum recording length';
+
+  @override
+  String settingsSecondsValue(int seconds) {
+    return '$seconds s';
+  }
+
+  @override
+  String get settingsGifNote => 'Longer GIFs make larger files.';
+
+  @override
+  String get settingsFoldersSection => 'Save locations';
+
+  @override
+  String get settingsImageFolder => 'Images (PNG, GIF)';
+
+  @override
+  String get settingsVideoFolder => 'Videos (MP4)';
+
+  @override
+  String get settingsImageFolderDefault => 'Default · Snapdock in Pictures';
+
+  @override
+  String get settingsVideoFolderDefault => 'Default · Snapdock in Movies';
+
+  @override
+  String get settingsChooseFolder => 'Choose folder';
+
+  @override
+  String get settingsResetFolder => 'Default';
 }

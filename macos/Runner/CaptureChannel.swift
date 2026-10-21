@@ -35,6 +35,12 @@ enum CaptureChannel {
       case "stopRecording":
         Task { @MainActor in RecordingSession.stopCurrent() }
         result(nil)
+      case "configure":
+        let args = call.arguments as? [String: Any]
+        if let seconds = args?["maxSeconds"] as? Int { CaptureConfig.maxRecordingSeconds = Double(max(1, seconds)) }
+        CaptureConfig.imageDirectory = (args?["imageDir"] as? String).map { URL(fileURLWithPath: $0, isDirectory: true) }
+        CaptureConfig.videoDirectory = (args?["videoDir"] as? String).map { URL(fileURLWithPath: $0, isDirectory: true) }
+        result(nil)
       case "openFolder":
         let kind = (call.arguments as? [String: Any])?["kind"] as? String
         openSaveFolder(movies: kind == "movies")
@@ -111,11 +117,9 @@ enum CaptureChannel {
     pb.setData(png, forType: .png)
   }
 
-  /// ~/Pictures/Snapdock 또는 ~/Movies/Snapdock을 Finder로 연다. 아직 없으면 만든다.
+  /// 이미지 또는 영상 저장 폴더를 Finder로 연다. 아직 없으면 만든다.
   private static func openSaveFolder(movies: Bool) {
-    let base: FileManager.SearchPathDirectory = movies ? .moviesDirectory : .picturesDirectory
-    guard let root = FileManager.default.urls(for: base, in: .userDomainMask).first else { return }
-    let folder = root.appendingPathComponent("Snapdock", isDirectory: true)
+    guard let folder = CaptureConfig.saveFolder(movies: movies) else { return }
     try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
     NSWorkspace.shared.open(folder)
   }
@@ -131,13 +135,11 @@ enum CaptureChannel {
     }
   }
 
-  /// 임시 폴더의 녹화 파일을 사용자 폴더로 옮겨 둔다. 영상은 ~/Movies/Snapdock, GIF는 ~/Pictures/Snapdock.
+  /// 임시 폴더의 녹화 파일을 저장 폴더로 복사한다. 영상은 영상 폴더, GIF는 이미지 폴더로 간다.
   private static func saveFile(_ path: String) -> String? {
     let source = URL(fileURLWithPath: path)
     let isGIF = source.pathExtension.lowercased() == "gif"
-    let base: FileManager.SearchPathDirectory = isGIF ? .picturesDirectory : .moviesDirectory
-    guard let root = FileManager.default.urls(for: base, in: .userDomainMask).first else { return nil }
-    let folder = root.appendingPathComponent("Snapdock", isDirectory: true)
+    guard let folder = CaptureConfig.saveFolder(movies: !isGIF) else { return nil }
     let target = folder.appendingPathComponent(source.lastPathComponent)
     do {
       try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
@@ -149,10 +151,9 @@ enum CaptureChannel {
     }
   }
 
-  /// ~/Pictures/Snapdock 아래에 `Snapdock 2026-10-21 14.03.05.png` 형태로 저장한다.
+  /// 이미지 폴더에 `Snapdock 2026-10-21 14.03.05.png` 형태로 저장한다.
   private static func savePNG(_ png: Data) -> String? {
-    guard let pictures = FileManager.default.urls(for: .picturesDirectory, in: .userDomainMask).first else { return nil }
-    let folder = pictures.appendingPathComponent("Snapdock", isDirectory: true)
+    guard let folder = CaptureConfig.saveFolder(movies: false) else { return nil }
     let formatter = DateFormatter()
     formatter.locale = Locale(identifier: "en_US_POSIX")
     formatter.dateFormat = "yyyy-MM-dd HH.mm.ss"

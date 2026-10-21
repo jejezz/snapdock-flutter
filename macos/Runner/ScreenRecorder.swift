@@ -4,9 +4,23 @@ import ImageIO
 import ScreenCaptureKit
 import UniformTypeIdentifiers
 
-/// 녹화 길이 제한. 한 곳에서만 정한다.
+/// 사용자가 설정에서 바꾸는 값. Flutter가 `configure`로 보내 준다.
+enum CaptureConfig {
+  /// 녹화 길이 제한(초). 기본 10초.
+  static var maxRecordingSeconds: Double = 10
+  /// nil이면 ~/Pictures/Snapdock. 이미지(PNG)와 GIF가 간다.
+  static var imageDirectory: URL?
+  /// nil이면 ~/Movies/Snapdock. 영상(MP4)이 간다.
+  static var videoDirectory: URL?
+
+  static func saveFolder(movies: Bool) -> URL? {
+    if let custom = movies ? videoDirectory : imageDirectory { return custom }
+    let base: FileManager.SearchPathDirectory = movies ? .moviesDirectory : .picturesDirectory
+    return FileManager.default.urls(for: base, in: .userDomainMask).first?.appendingPathComponent("Snapdock", isDirectory: true)
+  }
+}
+
 enum RecordingLimits {
-  static let maxSeconds: Double = 10
   static let videoFPS = 30
   static let gifRecordFPS = 15
   static let gifFPS = 10
@@ -153,8 +167,8 @@ final class RecordingSession {
       MainActor.assumeIsolated {
         guard let self else { return }
         let elapsed = Date().timeIntervalSince(self.startedAt)
-        self.pill?.update(elapsed: min(elapsed, RecordingLimits.maxSeconds))
-        if elapsed >= RecordingLimits.maxSeconds { self.finishWaiting() }
+        self.pill?.update(elapsed: min(elapsed, CaptureConfig.maxRecordingSeconds))
+        if elapsed >= CaptureConfig.maxRecordingSeconds { self.finishWaiting() }
       }
     }
     await withCheckedContinuation { continuation = $0 }
@@ -164,7 +178,7 @@ final class RecordingSession {
     pill.close()
     self.pill = nil
     Self.current = nil
-    let elapsed = min(Date().timeIntervalSince(startedAt), RecordingLimits.maxSeconds)
+    let elapsed = min(Date().timeIntervalSince(startedAt), CaptureConfig.maxRecordingSeconds)
 
     let file = try await recorder.stop()
     let thumb = try await Self.thumbnail(of: file)
@@ -349,8 +363,8 @@ private final class RecordingPill {
   }
 
   func update(elapsed: Double) {
-    let max = Int(RecordingLimits.maxSeconds)
-    label.stringValue = String(format: "00:%02d / 00:%02d", Int(elapsed), max)
+    func clock(_ seconds: Int) -> String { String(format: "%02d:%02d", seconds / 60, seconds % 60) }
+    label.stringValue = "\(clock(Int(elapsed))) / \(clock(Int(CaptureConfig.maxRecordingSeconds)))"
   }
 }
 
