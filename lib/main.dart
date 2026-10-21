@@ -306,8 +306,9 @@ class _CaptureBar extends StatelessWidget {
           segments: const [
             ButtonSegment(value: CaptureShape.rect, icon: Icon(Icons.crop_square_rounded)),
             ButtonSegment(value: CaptureShape.circle, icon: Icon(Icons.circle_outlined)),
+            ButtonSegment(value: CaptureShape.window, icon: Icon(Icons.web_asset_rounded)),
           ],
-          selected: {controller.shape},
+          selected: {controller.shape == CaptureShape.screen ? CaptureShape.rect : controller.shape},
           onSelectionChanged: (s) => controller.setShape(s.first),
         ),
         const SizedBox(width: AppSpacing.md),

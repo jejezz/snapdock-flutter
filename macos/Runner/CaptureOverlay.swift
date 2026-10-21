@@ -13,7 +13,14 @@ struct CaptureOutcome {
 }
 
 enum CaptureShape: String {
-  case rect, circle
+  case rect, circle, window, screen
+}
+
+/// 창 선택 모드에서 가리킬 수 있는 창. `rect`는 오버레이 뷰 좌표(왼쪽 위 원점, 포인트)다.
+struct WindowTarget {
+  let window: SCWindow
+  let rect: CGRect
+  let title: String
 }
 
 enum CaptureError: Error {
@@ -51,15 +58,15 @@ final class CaptureOverlayController {
     self.completion = completion
     Task { @MainActor in
       do {
-        let image = try await Self.snapshot(of: screen)
-        self.present(image: image, on: screen, shape: shape)
+        let (image, windows) = try await Self.snapshot(of: screen)
+        self.present(image: image, windows: windows, on: screen, shape: shape)
       } catch {
         self.finish(.failure(error))
       }
     }
   }
 
-  private static func snapshot(of screen: NSScreen) async throws -> CGImage {
+  private static func snapshot(of screen: NSScreen) async throws -> (CGImage, [WindowTarget]) {
     guard let number = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber else {
       throw CaptureError.noDisplay
     }
@@ -75,10 +82,36 @@ final class CaptureOverlayController {
     config.width = Int(CGFloat(display.width) * scale)
     config.height = Int(CGFloat(display.height) * scale)
     config.showsCursor = false
-    return try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
+    let image = try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
+    return (image, windowTargets(in: content, display: display))
   }
 
-  private func present(image: CGImage, on screen: NSScreen, shape: CaptureShape) {
+  /// 이 디스플레이 위에서 가리킬 수 있는 일반 창을 앞에 있는 순서대로 모은다.
+  private static func windowTargets(in content: SCShareableContent, display: SCDisplay) -> [WindowTarget] {
+    let origin = CGDisplayBounds(display.displayID).origin
+    let bounds = CGRect(origin: .zero, size: CGSize(width: display.width, height: display.height))
+
+    // SCShareableContent는 앞뒤 순서를 보장하지 않아서, 순서만 CGWindowList에서 빌린다.
+    let info = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
+    var order: [CGWindowID: Int] = [:]
+    for (index, entry) in info.enumerated() {
+      if let number = entry[kCGWindowNumber as String] as? CGWindowID { order[number] = index }
+    }
+
+    let own = Bundle.main.bundleIdentifier
+    return content.windows
+      .filter { $0.isOnScreen && $0.windowLayer == 0 && $0.owningApplication?.bundleIdentifier != own }
+      .compactMap { w -> (Int, WindowTarget)? in
+        let rect = w.frame.offsetBy(dx: -origin.x, dy: -origin.y).intersection(bounds)
+        guard !rect.isNull, rect.width >= 40, rect.height >= 40 else { return nil }
+        let title = [w.owningApplication?.applicationName, w.title].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " — ")
+        return (order[w.windowID] ?? Int.max, WindowTarget(window: w, rect: rect, title: title))
+      }
+      .sorted { $0.0 < $1.0 }
+      .map { $0.1 }
+  }
+
+  private func present(image: CGImage, windows: [WindowTarget], on screen: NSScreen, shape: CaptureShape) {
     let window = OverlayWindow(contentRect: screen.frame, styleMask: .borderless, backing: .buffered, defer: false, screen: screen)
     window.level = .screenSaver
     window.isOpaque = false
@@ -87,7 +120,7 @@ final class CaptureOverlayController {
     window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
     window.isReleasedWhenClosed = false
 
-    let view = OverlayView(frame: NSRect(origin: .zero, size: screen.frame.size), image: image, shape: shape)
+    let view = OverlayView(frame: NSRect(origin: .zero, size: screen.frame.size), image: image, windows: windows, shape: shape)
     view.onFinish = { [weak self] outcome in self?.finish(.success(outcome)) }
     window.contentView = view
     self.window = window
@@ -151,12 +184,16 @@ private final class OverlayView: NSView {
   var onFinish: ((CaptureOutcome?) -> Void)?
 
   private let image: CGImage
+  private let windows: [WindowTarget]
   private var shape: CaptureShape
   private var selection: NSRect?
+  /// 창 모드에서 클릭해 고정한 창. 있으면 선택 영역은 그 창이고 앵커는 숨긴다.
+  private var locked: WindowTarget?
+  private var hovered: WindowTarget?
   private var drag: Drag?
+  private var confirming = false
   private var toolbar: NSView?
-  private var rectButton: NSButton?
-  private var circleButton: NSButton?
+  private var shapeButtons: [(NSButton, CaptureShape)] = []
 
   private let handleSize: CGFloat = 10
   private let minSide: CGFloat = 8
@@ -165,9 +202,10 @@ private final class OverlayView: NSView {
   override var isFlipped: Bool { true }
   override var acceptsFirstResponder: Bool { true }
 
-  init(frame: NSRect, image: CGImage, shape: CaptureShape) {
+  init(frame: NSRect, image: CGImage, windows: [WindowTarget], shape: CaptureShape) {
     self.image = image
-    self.shape = shape
+    self.windows = windows
+    self.shape = (shape == .screen) ? .rect : shape
     super.init(frame: frame)
     addTrackingArea(NSTrackingArea(rect: .zero, options: [.mouseMoved, .activeAlways, .inVisibleRect], owner: self, userInfo: nil))
   }
@@ -175,46 +213,67 @@ private final class OverlayView: NSView {
   @available(*, unavailable)
   required init?(coder: NSCoder) { fatalError() }
 
+  override func viewDidMoveToWindow() {
+    super.viewDidMoveToWindow()
+    if window != nil, toolbar == nil { showToolbar() }
+  }
+
   // MARK: 그리기
 
   private func path(for r: NSRect) -> NSBezierPath {
     shape == .circle ? NSBezierPath(ovalIn: r) : NSBezierPath(rect: r)
   }
 
+  /// 지금 밝게 보여 줄 영역: 고른 영역, 없으면 창 모드에서 마우스 아래의 창.
+  private var activeRect: NSRect? {
+    if let selection { return selection }
+    if shape == .window { return hovered?.rect }
+    return nil
+  }
+
   override func draw(_ dirtyRect: NSRect) {
     NSImage(cgImage: image, size: bounds.size).draw(in: bounds)
 
+    let active = activeRect
     let dim = NSBezierPath(rect: bounds)
-    if let r = selection {
+    if let r = active {
       dim.append(path(for: r))
       dim.windingRule = .evenOdd
     }
     NSColor.black.withAlphaComponent(0.45).setFill()
     dim.fill()
 
-    guard let r = selection else { return }
+    guard let r = active else { return }
     let outline = path(for: r)
-    outline.lineWidth = 1.5
-    NSColor.white.setStroke()
+    let hoverOnly = selection == nil
+    outline.lineWidth = hoverOnly ? 3 : 1.5
+    (hoverOnly ? accent : NSColor.white).setStroke()
     outline.stroke()
 
-    for h in Handle.allCases {
-      let p = h.point(in: r)
-      let box = NSRect(x: p.x - handleSize / 2, y: p.y - handleSize / 2, width: handleSize, height: handleSize)
-      let square = NSBezierPath(roundedRect: box, xRadius: 2, yRadius: 2)
-      NSColor.white.setFill()
-      square.fill()
-      accent.setStroke()
-      square.lineWidth = 1.5
-      square.stroke()
+    if selection != nil, locked == nil {
+      for h in Handle.allCases {
+        let p = h.point(in: r)
+        let box = NSRect(x: p.x - handleSize / 2, y: p.y - handleSize / 2, width: handleSize, height: handleSize)
+        let square = NSBezierPath(roundedRect: box, xRadius: 2, yRadius: 2)
+        NSColor.white.setFill()
+        square.fill()
+        accent.setStroke()
+        square.lineWidth = 1.5
+        square.stroke()
+      }
     }
 
-    drawSizeBadge(for: r)
+    drawSizeBadge(for: r, title: (locked ?? hovered)?.title)
   }
 
-  private func drawSizeBadge(for r: NSRect) {
+  private func drawSizeBadge(for r: NSRect, title: String?) {
     let (w, h) = pixelSize(of: r)
-    let text = "\(w) × \(h)" as NSString
+    var label = "\(w) × \(h)"
+    if shape == .window, let title, !title.isEmpty {
+      let clipped = title.count > 48 ? String(title.prefix(47)) + "…" : title
+      label = "\(clipped)  ·  \(label)"
+    }
+    let text = label as NSString
     let attrs: [NSAttributedString.Key: Any] = [
       .font: NSFont.monospacedSystemFont(ofSize: 12, weight: .regular),
       .foregroundColor: NSColor.white,
@@ -234,8 +293,12 @@ private final class OverlayView: NSView {
 
   // MARK: 마우스
 
+  private func window(at p: NSPoint) -> WindowTarget? {
+    windows.first { $0.rect.contains(p) }
+  }
+
   private func hitHandle(at p: NSPoint) -> Handle? {
-    guard let r = selection else { return nil }
+    guard let r = selection, locked == nil else { return nil }
     let slop = handleSize
     return Handle.allCases.first { h in
       let hp = h.point(in: r)
@@ -245,6 +308,17 @@ private final class OverlayView: NSView {
 
   override func mouseMoved(with event: NSEvent) {
     let p = convert(event.locationInWindow, from: nil)
+    if shape == .window {
+      if selection == nil {
+        let target = window(at: p)
+        if target?.window.windowID != hovered?.window.windowID {
+          hovered = target
+          needsDisplay = true
+        }
+      }
+      (window(at: p) != nil ? NSCursor.pointingHand : NSCursor.arrow).set()
+      return
+    }
     if let h = hitHandle(at: p) {
       switch (h.dx, h.dy) {
       case (0, _): NSCursor.resizeUpDown.set()
@@ -260,6 +334,21 @@ private final class OverlayView: NSView {
 
   override func mouseDown(with event: NSEvent) {
     let p = convert(event.locationInWindow, from: nil)
+
+    if shape == .window {
+      if let target = window(at: p), locked == nil || !(selection?.contains(p) ?? false) {
+        locked = target
+        hovered = target
+        selection = target.rect
+      } else if locked != nil, !(selection?.contains(p) ?? false) {
+        locked = nil
+        selection = nil
+      }
+      showToolbar()
+      needsDisplay = true
+      return
+    }
+
     hideToolbar()
     if let h = hitHandle(at: p), let r = selection {
       drag = .resizing(h, original: r)
@@ -295,12 +384,13 @@ private final class OverlayView: NSView {
   }
 
   override func mouseUp(with event: NSEvent) {
+    guard drag != nil else { return }
     drag = nil
     if let r = selection, r.width < minSide || r.height < minSide {
       selection = nil
     }
     needsDisplay = true
-    if selection != nil { showToolbar() }
+    showToolbar()
   }
 
   private func clamp(_ p: NSPoint) -> NSPoint {
@@ -345,19 +435,26 @@ private final class OverlayView: NSView {
     return v
   }
 
+  /// 툴바는 처음부터 화면 아래 가운데에 떠 있고, 영역을 고르면 그 영역 곁으로 옮겨 간다.
   private func showToolbar() {
     hideToolbar()
-    guard let r = selection else { return }
 
     let rectB = makeButton("square", label: "사각형", action: #selector(pickRect))
     let circleB = makeButton("circle", label: "원형", action: #selector(pickCircle))
-    let copyB = makeButton("doc.on.doc", label: "복사", action: #selector(copyTapped))
-    let saveB = makeButton("arrow.down.to.line", label: "저장", action: #selector(saveTapped))
-    let closeB = makeButton("xmark", label: "닫기", action: #selector(closeTapped))
-    rectButton = rectB
-    circleButton = circleB
+    let windowB = makeButton("macwindow", label: "창", action: #selector(pickWindow))
+    let screenB = makeButton("display", label: "화면 전체", action: #selector(screenTapped))
+    shapeButtons = [(rectB, .rect), (circleB, .circle), (windowB, .window)]
 
-    let stack = NSStackView(views: [rectB, circleB, separator(), copyB, saveB, closeB])
+    var views: [NSView] = [rectB, circleB, windowB, screenB]
+    if selection != nil {
+      views.append(separator())
+      views.append(makeButton("doc.on.doc", label: "복사", action: #selector(copyTapped)))
+      views.append(makeButton("arrow.down.to.line", label: "저장", action: #selector(saveTapped)))
+    }
+    views.append(separator())
+    views.append(makeButton("xmark", label: "닫기", action: #selector(closeTapped)))
+
+    let stack = NSStackView(views: views)
     stack.orientation = .horizontal
     stack.spacing = 2
     stack.edgeInsets = NSEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
@@ -378,10 +475,18 @@ private final class OverlayView: NSView {
       stack.bottomAnchor.constraint(equalTo: bar.bottomAnchor),
     ])
     let size = stack.fittingSize
-    var y = r.maxY + 10
-    if y + size.height + 4 > bounds.height { y = r.minY - size.height - 10 }
-    if y < 4 { y = r.maxY - size.height - 10 }
-    let x = min(max(4, r.midX - size.width / 2), bounds.width - size.width - 4)
+
+    let x: CGFloat
+    var y: CGFloat
+    if let r = selection {
+      y = r.maxY + 10
+      if y + size.height + 4 > bounds.height { y = r.minY - size.height - 10 }
+      if y < 4 { y = r.maxY - size.height - 10 }
+      x = min(max(4, r.midX - size.width / 2), bounds.width - size.width - 4)
+    } else {
+      y = bounds.height - size.height - 48
+      x = bounds.midX - size.width / 2
+    }
     bar.frame = NSRect(x: x, y: y, width: size.width, height: size.height)
     addSubview(bar)
     toolbar = bar
@@ -394,30 +499,54 @@ private final class OverlayView: NSView {
   }
 
   private func refreshShapeButtons() {
-    for (button, mine) in [(rectButton, CaptureShape.rect), (circleButton, CaptureShape.circle)] {
+    for (button, mine) in shapeButtons {
       let on = shape == mine
-      button?.contentTintColor = on ? accent : .labelColor
-      button?.layer?.backgroundColor = on ? accent.withAlphaComponent(0.16).cgColor : NSColor.clear.cgColor
+      button.contentTintColor = on ? accent : .labelColor
+      button.layer?.backgroundColor = on ? accent.withAlphaComponent(0.16).cgColor : NSColor.clear.cgColor
     }
   }
 
   @objc private func pickRect() { setShape(.rect) }
   @objc private func pickCircle() { setShape(.circle) }
+  @objc private func pickWindow() { setShape(.window) }
   @objc private func copyTapped() { confirm(.copy) }
   @objc private func saveTapped() { confirm(.save) }
   @objc private func closeTapped() { onFinish?(nil) }
 
+  @objc private func screenTapped() {
+    guard let png = renderPNG(cropping: CGRect(x: 0, y: 0, width: image.width, height: image.height), as: .rect) else {
+      onFinish?(nil)
+      return
+    }
+    onFinish?(CaptureOutcome(action: .copy, shape: .screen, png: png, width: image.width, height: image.height))
+  }
+
   private func setShape(_ s: CaptureShape) {
+    guard shape != s else { return }
     shape = s
-    refreshShapeButtons()
+    if s == .window {
+      selection = nil
+      locked = nil
+      hovered = nil
+    } else if locked != nil {
+      // 고정한 창의 영역을 그대로 가져와 사각형/원형으로 다듬을 수 있게 한다.
+      locked = nil
+    }
+    showToolbar()
     needsDisplay = true
   }
 
   // MARK: 결과
 
   private func confirm(_ action: CaptureOutcome.Action) {
-    guard let r = selection else { return }
-    guard let png = renderPNG(of: r) else {
+    guard let r = selection, !confirming else { return }
+    if let target = locked {
+      renderWindow(target, action: action)
+      return
+    }
+    let s = pixelScale
+    let crop = CGRect(x: r.minX * s, y: r.minY * s, width: r.width * s, height: r.height * s)
+    guard let png = renderPNG(cropping: crop, as: shape) else {
       onFinish?(nil)
       return
     }
@@ -425,12 +554,33 @@ private final class OverlayView: NSView {
     onFinish?(CaptureOutcome(action: action, shape: shape, png: png, width: w, height: h))
   }
 
-  /// 선택 영역을 픽셀 단위로 잘라 PNG로 만든다. 원형이면 바깥을 투명하게 둔다.
-  private func renderPNG(of r: NSRect) -> Data? {
-    let s = pixelScale
-    let px = CGRect(x: r.minX * s, y: r.minY * s, width: r.width * s, height: r.height * s)
-      .integral
-      .intersection(CGRect(x: 0, y: 0, width: image.width, height: image.height))
+  /// 창 하나를 가려진 부분까지 포함해 그 창만 찍는다 (그림자는 뺀다).
+  private func renderWindow(_ target: WindowTarget, action: CaptureOutcome.Action) {
+    confirming = true
+    let scale = pixelScale
+    Task { @MainActor in
+      do {
+        let filter = SCContentFilter(desktopIndependentWindow: target.window)
+        let config = SCStreamConfiguration()
+        config.width = Int((target.window.frame.width * scale).rounded())
+        config.height = Int((target.window.frame.height * scale).rounded())
+        config.showsCursor = false
+        config.ignoreShadowsSingleWindow = true
+        let shot = try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
+        guard let png = NSBitmapImageRep(cgImage: shot).representation(using: .png, properties: [:]) else {
+          onFinish?(nil)
+          return
+        }
+        onFinish?(CaptureOutcome(action: action, shape: .window, png: png, width: shot.width, height: shot.height))
+      } catch {
+        onFinish?(nil)
+      }
+    }
+  }
+
+  /// 얼린 화면에서 픽셀 단위로 잘라 PNG로 만든다. 원형이면 바깥을 투명하게 둔다.
+  private func renderPNG(cropping rect: CGRect, as shape: CaptureShape) -> Data? {
+    let px = rect.integral.intersection(CGRect(x: 0, y: 0, width: image.width, height: image.height))
     guard px.width >= 1, px.height >= 1, var cropped = image.cropping(to: px) else { return nil }
 
     if shape == .circle {

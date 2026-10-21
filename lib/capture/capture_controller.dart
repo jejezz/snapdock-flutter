@@ -50,7 +50,8 @@ class CaptureController extends ChangeNotifier {
       final result = await _service.captureRegion(shape: _shape);
       if (_permissionDenied) _permissionDenied = false;
       if (result == null) return;
-      _shape = result.shape;
+      // 화면 전체는 일회성 동작이라 다음 모드로 기억하지 않는다.
+      if (result.shape != CaptureShape.screen) _shape = result.shape;
       _items.insert(
         0,
         CaptureItem(

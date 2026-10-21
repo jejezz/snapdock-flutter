@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-enum CaptureShape { rect, circle }
+enum CaptureShape { rect, circle, window, screen }
 
 enum CaptureAction { copy, save }
 
