@@ -30,7 +30,7 @@ conventions-v1 — jejezz/application-release-templates (`conventions/README.md`
 
 ## Windows
 
-개발은 Windows에서 이어진다. 네이티브 캡처(채널 `art.zoomon.snapdock/capture`)를 `windows/runner/capture_*.cpp`, `screen_recorder.cpp`에 구현했다(빌드 확인까지, 실기기 확인 전). 해야 할 일, 채널 규격, 확인 목록은 [`docs/WINDOWS.md`](docs/WINDOWS.md)에 있다.
+개발은 Windows에서 이어진다. 네이티브 캡처(채널 `art.zoomon.snapdock/capture`)를 `windows/runner/capture_*.cpp`, `screen_recorder.cpp`에 구현했다(화면 전체·앱 창·영상 녹화·끌어다 놓기·독/알약 모드는 Windows에서 확인함. 원형·GIF·멀티 모니터는 아직). 해야 할 일, 채널 규격, 확인 목록은 [`docs/WINDOWS.md`](docs/WINDOWS.md)에 있다.
 
 ## 구현 현황
 
@@ -39,7 +39,7 @@ conventions-v1 — jejezz/application-release-templates (`conventions/README.md`
 - 영상·GIF 녹화(macOS): 영역이나 창을 고른 뒤 툴바의 영상/GIF 단추. 최대 길이는 설정에서 3~60초(기본 10초, `CaptureConfig.maxRecordingSeconds`, `ScreenRecorder.swift`), 화면 위쪽 알약에 카운트다운과 정지 단추, 단축키를 한 번 더 눌러도 멈춘다. MP4는 H.264, GIF는 15fps로 녹화한 MP4를 10fps·가로 720px 이하로 변환한다. 파일은 임시 폴더에 두고 저장하면 저장 폴더로 복사한다.
 - 설정 창(앱 바의 톱니): 녹화 길이, 이미지(PNG·GIF) 저장 폴더, 영상(MP4) 저장 폴더. `lib/settings/capture_settings.dart`가 shared_preferences에 저장하고 시작할 때와 바뀔 때마다 채널 `configure`로 네이티브에 보낸다. 폴더가 비어 있으면 기본값 ~/Pictures/Snapdock, ~/Movies/Snapdock.
 - 독 완성도(macOS에서 확인 완료): 썸네일을 창 밖으로 끌면 OS 드래그로 넘어가 PNG/MP4/GIF 파일이 나간다(flutter_drag_out v0.5.0). 캡처는 앱 지원 폴더 `captures/`에 파일로 두고 `index.json`에 적어 앱을 다시 켜도 돌아온다(최대 30개, 넘치면 오래된 것부터). 독은 접어서 알약(손잡이·카메라·개수)으로 둘 수 있고 접힘 상태도 기억한다. 캡처 순간 영역이 0.16초 번쩍이고 썸네일은 커지며 들어온다.
-- 아직 없는 것: 썸네일이 캡처 영역에서 독으로 날아가는 효과(지금은 독 안에서 커지며 나타나기만 한다), 단축키 설정, Windows 네이티브 캡처의 실기기 확인(구현은 됨, `docs/WINDOWS.md`의 확인 목록).
+- 아직 없는 것: 썸네일이 캡처 영역에서 독으로 날아가는 효과(지금은 독 안에서 커지며 나타나기만 한다), 단축키 설정, Windows 네이티브 캡처 중 원형·GIF·멀티 모니터의 실기기 확인(`docs/WINDOWS.md`).
 - 네이티브: `macos/Runner/CaptureOverlay.swift`(오버레이), `CaptureChannel.swift`(채널). Flutter: `lib/capture/`, `lib/dock/`.
 
 - 독 모드: 마지막에 독으로 끝내면 독으로 시작하고 썸네일 크기(S/M/L)도 기억한다(shared_preferences). 독은 항상 커서가 있는 모니터의 위쪽 가운데(여백 12px)에서 시작하고, 썸네일이 늘면 가로 가운데를 지키며 자란다.
