@@ -7,6 +7,10 @@ project(runner LANGUAGES CXX)
 #
 # Any new source files that you add to the application should be added here.
 add_executable(${BINARY_NAME} WIN32
+  "capture_channel.cpp"
+  "capture_common.cpp"
+  "capture_overlay.cpp"
+  "screen_recorder.cpp"
   "flutter_window.cpp"
   "main.cpp"
   "utils.cpp"
@@ -19,6 +23,13 @@ add_executable(${BINARY_NAME} WIN32
 # Apply the standard set of build settings. This can be removed for applications
 # that need different build settings.
 apply_standard_settings(${BINARY_NAME})
+
+# 소스는 UTF-8(한글 문자열·주석)이고, 캡처 소스는 표준 설정의 /W4 /WX는 GDI+ 변환 경고에 걸려 낮춘다.
+target_compile_options(${BINARY_NAME} PRIVATE "/utf-8")
+set_source_files_properties(
+  "capture_channel.cpp" "capture_common.cpp" "capture_overlay.cpp" "screen_recorder.cpp"
+  PROPERTIES COMPILE_OPTIONS "/W3;/WX-"
+)
 
 # Add preprocessor definitions for the build version.
 target_compile_definitions(${BINARY_NAME} PRIVATE "FLUTTER_VERSION=\"${FLUTTER_VERSION}\"")
@@ -34,6 +45,8 @@ target_compile_definitions(${BINARY_NAME} PRIVATE "NOMINMAX")
 # dependencies here.
 target_link_libraries(${BINARY_NAME} PRIVATE flutter flutter_wrapper_app)
 target_link_libraries(${BINARY_NAME} PRIVATE "dwmapi.lib")
+# 네이티브 캡처: GDI+(PNG, 그리기), Media Foundation(MP4), shell32(폴더·클립보드).
+target_link_libraries(${BINARY_NAME} PRIVATE "gdiplus.lib" "mfplat.lib" "mfreadwrite.lib" "mfuuid.lib" "shell32.lib" "ole32.lib")
 target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
 
 # Run the Flutter tool portions of the build. This must not be removed.

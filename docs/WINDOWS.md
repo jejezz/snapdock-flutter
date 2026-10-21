@@ -5,11 +5,12 @@ macOS에서 만든 Snapdock을 Windows로 가져오는 작업의 인수인계 �
 ## 지금 상태
 
 - Flutter 쪽(`lib/`)은 대부분 플랫폼과 무관하고 Windows에서도 그대로 돈다: 독, 설정 창, 캡처 목록 보관, 끌어다 놓기(`flutter_drag_out`은 Windows OLE `DoDragDrop` 지원, beta), 전역 단축키(`hotkey_manager`), 폴더 선택(`file_selector`).
-- **네이티브 캡처가 macOS에만 있다.** `windows/runner/`는 `flutter create`가 만든 그대로다. 채널 `art.zoomon.snapdock/capture`를 등록하는 코드가 없어서 Windows 빌드에서 캡처 단추는 `MissingPluginException`을 삼키고 아무 일도 하지 않는다(`CaptureController.capture`, `CaptureSettings.apply`가 이 경우를 조용히 넘기게 해 두었다).
+- **네이티브 캡처를 구현했다(빌드만 확인, 실기기 동작 확인 전).** `windows/runner/`의 `capture_channel.cpp`(채널·클립보드·저장), `capture_overlay.cpp`(얼린 화면 위 영역/창/원형 선택, 툴바, 스크린샷), `screen_recorder.cpp`(GDI 영역 녹화 → Media Foundation H.264 MP4 또는 직접 만든 GIF 인코더, 카운트다운 알약), `capture_common.cpp`(설정·PNG·경로). `flutter build windows --debug`가 통과한다. 우리 창(독·알약)은 `SetWindowDisplayAffinity(WDA_EXCLUDEFROMCAPTURE)`로 캡처에서 뺀다(Windows 10 2004 이상).
+- 구현 방식은 아래 표의 "후보"와 조금 다르다: 얼리기·녹화는 DXGI/Graphics.Capture 대신 GDI `BitBlt`, 창 한 장 캡처는 `PrintWindow(PW_RENDERFULLCONTENT)`, 창 녹화는 창 위치를 따라가며 그 영역을 뜬다(다른 창이 위에 겹치면 같이 찍힌다). GIF는 15fps→10fps 변환 대신 처음부터 10fps, 가로 720px 이하, 고정 252색 팔레트+순서 디더링으로 쓴다.
 - Windows 릴리스 파이프라인(Inno Setup 설치 파일)은 이미 동작한다. `v0.1.0-rc.2`에서 `build-windows`가 성공했다.
 - 앱은 macOS와 Windows만 지원한다. Linux 폴더는 없고 릴리스 워크플로에서도 뺐다.
 
-## 해야 할 일 (순서 제안)
+## 해야 할 일 (순서 제안, 1~4는 구현됨 — 실기기 확인이 남았다)
 
 1. **채널 뼈대**: `windows/runner/`에 `CaptureChannel`을 만들어 아래 규격의 메서드를 등록한다. `flutter_window.cpp`의 `OnCreate`에서 `flutter_controller_->engine()`으로 `MethodChannel`을 연결한다. 먼저 `configure`, `permissionStatus`(항상 true), `openFolder`, `copyImage`, `saveImage`처럼 쉬운 것부터 채우면 설정 창과 폴더 열기가 바로 살아난다.
 2. **영역 선택 오버레이 + 스크린샷**: 가장 큰 덩어리. macOS의 [`CaptureOverlay.swift`](../macos/Runner/CaptureOverlay.swift)와 같은 역할이다.
