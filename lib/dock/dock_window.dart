@@ -19,24 +19,34 @@ abstract final class DockWindow {
   static const _normalSize = Size(960, 640);
   static const _normalMinimum = Size(960, 600);
 
+  /// 독 아래 설명 한 줄의 높이.
+  static const hintHeight = 16.0;
+
   /// 세로는 썸네일 높이에 ✕ 배지가 넘치는 여백을 더한 값이다.
   static Size sizeFor({required int count, required DockSize size}) {
     const visibleMax = 8;
     final shown = count.clamp(0, visibleMax);
     const chrome = 12.0 + 20 + 6 + 28 * 3 + 6; // 안쪽 여백 + 손잡이 + 단추 3개
     final thumbs = shown * (size.width + 6);
-    return Size((chrome + thumbs).clamp(180, 900), size.width * 0.75 + 28);
+    return Size(
+      (chrome + thumbs).clamp(180, 900),
+      size.width * 0.75 + 28 + hintHeight,
+    );
   }
 
   static Future<void> enter(Size size) async {
     await windowManager.setMinimumSize(const Size(100, 40));
     await windowManager.setResizable(false);
     await windowManager.setAlwaysOnTop(true);
-    await windowManager.setTitleBarStyle(TitleBarStyle.hidden, windowButtonVisibility: false);
+    await windowManager.setTitleBarStyle(
+      TitleBarStyle.hidden,
+      windowButtonVisibility: false,
+    );
     await windowManager.setSize(size, animate: true);
   }
 
-  static Future<void> resize(Size size) => windowManager.setSize(size, animate: true);
+  static Future<void> resize(Size size) =>
+      windowManager.setSize(size, animate: true);
 
   static Future<void> exit() async {
     await windowManager.setAlwaysOnTop(false);
