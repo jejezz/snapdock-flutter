@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
+
 import 'package:flutter/services.dart';
 
 /// 전역 캡처 단축키의 표시 문구. 등록은 lib/main.dart(Alt+Shift+S)에서 한다.
@@ -115,6 +116,15 @@ class CaptureService {
       });
 
   Future<void> openSaveFolder(SaveFolder folder) => _channel.invokeMethod<void>('openFolder', {'kind': folder.name});
+
+  /// 디버그 빌드 전용: README 데모를 녹화할 영역(화면 좌표, 포인트)을 배경으로 덮는다. null이면 걷는다.
+  Future<void> demoBackdrop(Rect? rect) {
+    assert(kDebugMode, 'demoBackdrop is for debug builds');
+    return _channel.invokeMethod<void>(
+      'demoBackdrop',
+      rect == null ? null : [rect.left, rect.top, rect.width, rect.height],
+    );
+  }
 
   /// 녹화 중이면 일찍 끝낸다. 아니면 아무 일도 없다.
   Future<void> stopRecording() => _channel.invokeMethod<void>('stopRecording');

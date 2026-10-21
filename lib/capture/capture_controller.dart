@@ -149,6 +149,13 @@ class CaptureController extends ChangeNotifier {
     _persist();
   }
 
+  /// 디버그 빌드 전용: README 데모에서 방금 캡처한 것처럼 PNG 한 장을 목록에 올린다.
+  void addDemoImage(Uint8List png, {required int width, required int height, CaptureShape shape = CaptureShape.rect}) {
+    assert(kDebugMode, 'addDemoImage is for debug builds');
+    _add(CaptureResult(action: CaptureAction.copy, shape: shape, png: png, width: width, height: height));
+    notifyListeners();
+  }
+
   Future<void> copy(CaptureItem item) async {
     if (item.kind == CaptureKind.image) {
       await _service.copyImage(await File(item.path).readAsBytes());

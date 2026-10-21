@@ -32,6 +32,14 @@ enum CaptureChannel {
             respond(outcome, to: result)
           }
         }
+#if DEBUG
+      case "demoBackdrop":
+        let rect = (call.arguments as? [Double]).flatMap { $0.count == 4 ? CGRect(x: $0[0], y: $0[1], width: $0[2], height: $0[3]) : nil }
+        Task { @MainActor in
+          if let rect { DemoBackdrop.show(rect) } else { DemoBackdrop.hide() }
+          result(nil)
+        }
+#endif
       case "stopRecording":
         Task { @MainActor in RecordingSession.stopCurrent() }
         result(nil)
@@ -168,3 +176,47 @@ enum CaptureChannel {
     }
   }
 }
+
+// MARK: - README 데모 (디버그 빌드 전용)
+#if DEBUG
+/// README 데모를 녹화할 영역을 깔끔한 배경으로 덮는다. 뒤에 있는 사용자 창이 녹화에 들어가지 않게 하고,
+/// 독(메인 창)은 그 위로 올린다. tool/readme/demo.sh가 쓴다.
+@MainActor
+enum DemoBackdrop {
+  private static var window: NSWindow?
+
+  /// `rect`는 화면 좌표(포인트, 왼쪽 위 원점).
+  static func show(_ rect: CGRect) {
+    let primary = NSScreen.screens[0].frame.height
+    let frame = NSRect(x: rect.minX, y: primary - rect.maxY, width: rect.width, height: rect.height)
+    let backdrop = NSWindow(contentRect: frame, styleMask: .borderless, backing: .buffered, defer: false)
+    backdrop.level = NSWindow.Level(rawValue: 4)
+    backdrop.isOpaque = true
+    backdrop.hasShadow = false
+    backdrop.ignoresMouseEvents = true
+    backdrop.isReleasedWhenClosed = false
+    backdrop.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+    let view = NSView(frame: NSRect(origin: .zero, size: frame.size))
+    view.wantsLayer = true
+    let gradient = CAGradientLayer()
+    gradient.frame = view.bounds
+    gradient.colors = [
+      NSColor(srgbRed: 0.93, green: 0.95, blue: 0.99, alpha: 1).cgColor,
+      NSColor(srgbRed: 0.84, green: 0.88, blue: 0.97, alpha: 1).cgColor,
+    ]
+    gradient.startPoint = CGPoint(x: 0, y: 1)
+    gradient.endPoint = CGPoint(x: 1, y: 0)
+    view.layer?.addSublayer(gradient)
+    backdrop.contentView = view
+    window = backdrop
+    backdrop.orderFrontRegardless()
+    for w in NSApp.windows where w is MainFlutterWindow { w.level = NSWindow.Level(rawValue: 5) }
+  }
+
+  static func hide() {
+    window?.orderOut(nil)
+    window = nil
+    for w in NSApp.windows where w is MainFlutterWindow { w.level = .floating }
+  }
+}
+#endif

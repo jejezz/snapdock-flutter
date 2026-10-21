@@ -25,7 +25,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/demo.gif" width="720" alt="Snapdock demo: press the shortcut, drag a region, and the capture lands in the dock">
+  <img src="docs/screenshots/demo.gif" width="720" alt="Snapdock demo: new captures land in the dock, the thumbnails change size, and the dock folds into a pill">
 </p>
 
 ## Features
@@ -37,8 +37,11 @@
 - **Light & dark, English & 한국어** — follows the system, or pick one in the toolbar
 
 <p align="center">
-  <img src="docs/screenshots/home.png" width="360" alt="The thumbnail dock">
-  <img src="docs/screenshots/detail.png" width="360" alt="The region selector with its toolbar">
+  <img src="docs/screenshots/home.png" width="720" alt="Captures in the main window, light and dark">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/detail.png" width="720" alt="The always-on-top dock and its collapsed pill, light and dark">
 </p>
 
 ## Install
