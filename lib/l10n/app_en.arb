@@ -161,5 +161,10 @@
       }
     }
   },
-  "dockCollapseTooltip": "Collapse"
+  "dockCollapseTooltip": "Collapse",
+  "clearAllButton": "Clear all",
+  "clearAllTitle": "Clear all captures?",
+  "clearAllBody": "They are removed from the dock only. Files you saved stay where they are.",
+  "clearAllConfirm": "Clear all",
+  "commonCancel": "Cancel"
 }

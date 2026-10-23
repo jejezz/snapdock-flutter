@@ -287,4 +287,19 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get dockCollapseTooltip => '접기';
+
+  @override
+  String get clearAllButton => '모두 지우기';
+
+  @override
+  String get clearAllTitle => '캡처를 모두 지울까요?';
+
+  @override
+  String get clearAllBody => '독과 목록에서만 지워지고, 저장해 둔 파일은 그대로 남습니다.';
+
+  @override
+  String get clearAllConfirm => '모두 지우기';
+
+  @override
+  String get commonCancel => '취소';
 }

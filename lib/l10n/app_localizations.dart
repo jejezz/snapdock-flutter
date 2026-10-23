@@ -595,6 +595,36 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'접기'**
   String get dockCollapseTooltip;
+
+  /// No description provided for @clearAllButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'모두 지우기'**
+  String get clearAllButton;
+
+  /// No description provided for @clearAllTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'캡처를 모두 지울까요?'**
+  String get clearAllTitle;
+
+  /// No description provided for @clearAllBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'독과 목록에서만 지워지고, 저장해 둔 파일은 그대로 남습니다.'**
+  String get clearAllBody;
+
+  /// No description provided for @clearAllConfirm.
+  ///
+  /// In ko, this message translates to:
+  /// **'모두 지우기'**
+  String get clearAllConfirm;
+
+  /// No description provided for @commonCancel.
+  ///
+  /// In ko, this message translates to:
+  /// **'취소'**
+  String get commonCancel;
 }
 
 class _AppLocalizationsDelegate
