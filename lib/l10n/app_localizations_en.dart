@@ -290,4 +290,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dockCollapseTooltip => 'Collapse';
+
+  @override
+  String get clearAllButton => 'Clear all';
+
+  @override
+  String get clearAllTitle => 'Clear all captures?';
+
+  @override
+  String get clearAllBody =>
+      'They are removed from the dock only. Files you saved stay where they are.';
+
+  @override
+  String get clearAllConfirm => 'Clear all';
+
+  @override
+  String get commonCancel => 'Cancel';
 }

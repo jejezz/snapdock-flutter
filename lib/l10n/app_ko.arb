@@ -144,7 +144,9 @@
   "captureHotkeyHint": "단축키 {keys}",
   "@captureHotkeyHint": {
     "placeholders": {
-      "keys": {"type": "String"}
+      "keys": {
+        "type": "String"
+      }
     }
   },
   "capturePermissionTitle": "화면 기록 권한이 필요합니다",
@@ -183,5 +185,10 @@
       }
     }
   },
-  "dockCollapseTooltip": "접기"
+  "dockCollapseTooltip": "접기",
+  "clearAllButton": "모두 지우기",
+  "clearAllTitle": "캡처를 모두 지울까요?",
+  "clearAllBody": "독과 목록에서만 지워지고, 저장해 둔 파일은 그대로 남습니다.",
+  "clearAllConfirm": "모두 지우기",
+  "commonCancel": "취소"
 }

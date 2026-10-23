@@ -465,6 +465,27 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
+/// 목록을 비우기 전에 한 번 묻는다. 지워지는 것은 독의 항목뿐이고 사용자 폴더에 저장한 파일은 그대로다.
+Future<void> _confirmClearAll(BuildContext context, CaptureController controller) async {
+  final l10n = AppLocalizations.of(context);
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(l10n.clearAllTitle),
+      content: Text(l10n.clearAllBody),
+      actions: [
+        TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(l10n.commonCancel)),
+        FilledButton(
+          style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(l10n.clearAllConfirm),
+        ),
+      ],
+    ),
+  );
+  if (confirmed == true) controller.clear();
+}
+
 class _CaptureGrid extends StatelessWidget {
   const _CaptureGrid({required this.controller});
 
@@ -476,9 +497,16 @@ class _CaptureGrid extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: _CaptureBar(controller: controller),
+          child: Row(
+            children: [
+              _CaptureBar(controller: controller),
+              const Spacer(),
+              TextButton.icon(
+                onPressed: () => _confirmClearAll(context, controller),
+                icon: const Icon(Icons.delete_sweep_outlined),
+                label: Text(AppLocalizations.of(context).clearAllButton),
+              ),
+            ],
           ),
         ),
         Expanded(

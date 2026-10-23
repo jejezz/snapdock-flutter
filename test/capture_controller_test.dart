@@ -123,4 +123,23 @@ void main() {
     await second.load();
     expect(second.items.length, 1);
   });
+
+  test('clearing empties the list and the saved list', () async {
+    final first = CaptureController(_FakeService([_image(), _image(), _image()]), storeDir: dir);
+    await first.capture();
+    await first.capture();
+    await first.capture();
+    expect(first.items.length, 3);
+
+    var notified = 0;
+    first.addListener(() => notified++);
+    first.clear();
+    await first.flush();
+    expect(first.items, isEmpty);
+    expect(notified, 1);
+
+    final second = CaptureController(_FakeService([]), storeDir: dir);
+    await second.load();
+    expect(second.items, isEmpty);
+  });
 }
