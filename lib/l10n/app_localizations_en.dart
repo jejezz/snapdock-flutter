@@ -306,4 +306,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonCancel => 'Cancel';
+
+  @override
+  String get shapeRect => 'Rectangle';
+
+  @override
+  String get shapeCircle => 'Circle';
+
+  @override
+  String get shapeWindow => 'Window';
 }

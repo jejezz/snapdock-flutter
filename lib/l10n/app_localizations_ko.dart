@@ -302,4 +302,13 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get commonCancel => '취소';
+
+  @override
+  String get shapeRect => '사각형';
+
+  @override
+  String get shapeCircle => '원형';
+
+  @override
+  String get shapeWindow => '창';
 }

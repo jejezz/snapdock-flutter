@@ -625,6 +625,24 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'취소'**
   String get commonCancel;
+
+  /// No description provided for @shapeRect.
+  ///
+  /// In ko, this message translates to:
+  /// **'사각형'**
+  String get shapeRect;
+
+  /// No description provided for @shapeCircle.
+  ///
+  /// In ko, this message translates to:
+  /// **'원형'**
+  String get shapeCircle;
+
+  /// No description provided for @shapeWindow.
+  ///
+  /// In ko, this message translates to:
+  /// **'창'**
+  String get shapeWindow;
 }
 
 class _AppLocalizationsDelegate
