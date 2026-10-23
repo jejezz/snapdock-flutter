@@ -190,5 +190,8 @@
   "clearAllTitle": "캡처를 모두 지울까요?",
   "clearAllBody": "독과 목록에서만 지워지고, 저장해 둔 파일은 그대로 남습니다.",
   "clearAllConfirm": "모두 지우기",
-  "commonCancel": "취소"
+  "commonCancel": "취소",
+  "shapeRect": "사각형",
+  "shapeCircle": "원형",
+  "shapeWindow": "창"
 }

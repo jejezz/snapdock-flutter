@@ -403,18 +403,21 @@ class _CaptureBar extends StatelessWidget {
       children: [
         SegmentedButton<CaptureShape>(
           showSelectedIcon: false,
-          segments: const [
+          segments: [
             ButtonSegment(
               value: CaptureShape.rect,
-              icon: Icon(Icons.crop_square_rounded),
+              icon: const Icon(Icons.crop_square_rounded),
+              tooltip: l10n.shapeRect,
             ),
             ButtonSegment(
               value: CaptureShape.circle,
-              icon: Icon(Icons.circle_outlined),
+              icon: const Icon(Icons.circle_outlined),
+              tooltip: l10n.shapeCircle,
             ),
             ButtonSegment(
               value: CaptureShape.window,
-              icon: Icon(Icons.web_asset_rounded),
+              icon: const Icon(Icons.web_asset_rounded),
+              tooltip: l10n.shapeWindow,
             ),
           ],
           selected: {
