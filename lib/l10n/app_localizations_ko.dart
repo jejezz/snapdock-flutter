@@ -311,4 +311,8 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get shapeWindow => '창';
+
+  @override
+  String get homeDockIntro =>
+      '독으로 줄이면 창이 항상 위에 뜨는\n작은 막대가 되어 캡처가 쌓입니다.\n썸네일을 누르면 복사되고,\n다른 앱으로 끌어다 놓을 수도 있습니다.';
 }

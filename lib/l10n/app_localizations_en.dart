@@ -315,4 +315,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shapeWindow => 'Window';
+
+  @override
+  String get homeDockIntro =>
+      'Shrink to the dock and Snapdock becomes a small bar that stays on top of your windows and collects your captures. Click a thumbnail to copy it, or drag it into any app.';
 }

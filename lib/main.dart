@@ -292,6 +292,11 @@ class _HomeScreenState extends State<HomeScreen> {
         flexibleSpace: const FocusTint(),
         title: const Text(AppIdentity.displayName),
         actions: [
+          IconButton(
+            tooltip: l10n.dockShrinkTooltip,
+            icon: const Icon(Icons.close_fullscreen_rounded),
+            onPressed: _enterDock,
+          ),
           PopupMenuButton<SaveFolder>(
             tooltip: l10n.openFolderTooltip,
             icon: const Icon(Icons.folder_open_rounded),
@@ -300,11 +305,6 @@ class _HomeScreenState extends State<HomeScreen> {
               PopupMenuItem(value: SaveFolder.pictures, child: Text(l10n.openPicturesFolder)),
               PopupMenuItem(value: SaveFolder.movies, child: Text(l10n.openMoviesFolder)),
             ],
-          ),
-          IconButton(
-            tooltip: l10n.dockShrinkTooltip,
-            icon: const Icon(Icons.close_fullscreen_rounded),
-            onPressed: _enterDock,
           ),
           IconButton(
             tooltip: l10n.settingsTooltip,
@@ -329,7 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
               _PermissionBanner(controller: _captures),
             Expanded(
               child: _captures.items.isEmpty
-                  ? _EmptyState(controller: _captures)
+                  ? _EmptyState(controller: _captures, onShrink: _enterDock)
                   : _CaptureGrid(controller: _captures),
             ),
           ],
@@ -445,9 +445,12 @@ class _CaptureBar extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.controller});
+  const _EmptyState({required this.controller, required this.onShrink});
 
   final CaptureController controller;
+
+  /// 독 모드로 줄인다.
+  final VoidCallback onShrink;
 
   @override
   Widget build(BuildContext context) {
@@ -462,7 +465,52 @@ class _EmptyState extends StatelessWidget {
           Text(l10n.homeEmptyTitle, style: theme.textTheme.titleMedium),
           const SizedBox(height: AppSpacing.lg),
           _CaptureBar(controller: controller),
+          const SizedBox(height: AppSpacing.xxl),
+          _DockIntro(onShrink: onShrink),
         ],
+      ),
+    );
+  }
+}
+
+/// 캡처가 없을 때 독 모드를 소개한다. 독 모드가 이 앱에서 가장 쓸모 있는 쓰임이다.
+class _DockIntro extends StatelessWidget {
+  const _DockIntro({required this.onShrink});
+
+  final VoidCallback onShrink;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 420),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          border: Border.all(color: scheme.outlineVariant),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                l10n.homeDockIntro,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              OutlinedButton.icon(
+                onPressed: onShrink,
+                icon: const Icon(Icons.close_fullscreen_rounded),
+                label: Text(l10n.dockShrinkTooltip),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
