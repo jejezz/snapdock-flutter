@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 
@@ -23,7 +25,9 @@ class _SettingsDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final mac = Platform.isMacOS;
     return AlertDialog(
+      scrollable: true,
       title: Text(l10n.settingsTitle),
       content: SizedBox(
         width: 480,
@@ -45,6 +49,11 @@ class _SettingsDialog extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xl),
               ],
+              _SectionTitle(l10n.settingsShortcutsSection),
+              _ShortcutRow(label: l10n.settingsShortcutCapture, keys: mac ? '⌥⇧S' : 'Alt+Shift+S'),
+              _ShortcutRow(label: l10n.settingsShortcutDock, keys: mac ? '⌥⇧D' : 'Alt+Shift+D'),
+              Text(l10n.settingsShortcutDockNote, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+              const SizedBox(height: AppSpacing.xl),
               _SectionTitle(l10n.settingsRecordingSection),
               Row(
                 children: [
@@ -128,6 +137,27 @@ class _LaunchAtStartupRowState extends State<_LaunchAtStartupRow> {
       title: Text(AppLocalizations.of(context).settingsLaunchAtStartup),
       value: _enabled ?? false,
       onChanged: _enabled == null ? null : _toggle,
+    );
+  }
+}
+
+class _ShortcutRow extends StatelessWidget {
+  const _ShortcutRow({required this.label, required this.keys});
+
+  final String label;
+  final String keys;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+      child: Row(
+        children: [
+          Expanded(child: Text(label)),
+          Text(keys, style: theme.textTheme.titleSmall),
+        ],
+      ),
     );
   }
 }
