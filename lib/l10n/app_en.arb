@@ -154,6 +154,9 @@
   "settingsVideoFolderDefault": "Default · Snapdock in Movies",
   "settingsChooseFolder": "Choose folder",
   "settingsResetFolder": "Default",
+  "settingsGeneralSection": "General",
+  "settingsLaunchAtStartup": "Start when I sign in",
+  "settingsLaunchAtStartupFailed": "Couldn't change the startup setting.",
   "@settingsSecondsValue": {
     "placeholders": {
       "seconds": {

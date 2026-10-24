@@ -178,6 +178,9 @@
   "settingsVideoFolderDefault": "기본 · 동영상 폴더의 Snapdock",
   "settingsChooseFolder": "폴더 선택",
   "settingsResetFolder": "기본값",
+  "settingsGeneralSection": "일반",
+  "settingsLaunchAtStartup": "컴퓨터를 켤 때 자동으로 시작",
+  "settingsLaunchAtStartupFailed": "시작 프로그램 설정을 바꾸지 못했습니다.",
   "@settingsSecondsValue": {
     "placeholders": {
       "seconds": {

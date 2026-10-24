@@ -289,6 +289,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsResetFolder => 'Default';
 
   @override
+  String get settingsGeneralSection => 'General';
+
+  @override
+  String get settingsLaunchAtStartup => 'Start when I sign in';
+
+  @override
+  String get settingsLaunchAtStartupFailed =>
+      'Couldn\'t change the startup setting.';
+
+  @override
   String get dockCollapseTooltip => 'Collapse';
 
   @override

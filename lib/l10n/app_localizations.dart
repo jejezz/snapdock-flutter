@@ -590,6 +590,24 @@ abstract class AppLocalizations {
   /// **'기본값'**
   String get settingsResetFolder;
 
+  /// No description provided for @settingsGeneralSection.
+  ///
+  /// In ko, this message translates to:
+  /// **'일반'**
+  String get settingsGeneralSection;
+
+  /// No description provided for @settingsLaunchAtStartup.
+  ///
+  /// In ko, this message translates to:
+  /// **'컴퓨터를 켤 때 자동으로 시작'**
+  String get settingsLaunchAtStartup;
+
+  /// No description provided for @settingsLaunchAtStartupFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'시작 프로그램 설정을 바꾸지 못했습니다.'**
+  String get settingsLaunchAtStartupFailed;
+
   /// No description provided for @dockCollapseTooltip.
   ///
   /// In ko, this message translates to:

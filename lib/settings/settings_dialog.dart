@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import 'capture_settings.dart';
+import 'launch_at_startup.dart';
 
 /// 캡처 설정 창: 녹화 길이와 이미지·영상 저장 위치.
 Future<void> showCaptureSettingsDialog(BuildContext context, CaptureSettings settings) {
@@ -32,6 +33,11 @@ class _SettingsDialog extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (settings.launchAtStartup.isSupported) ...[
+                _SectionTitle(l10n.settingsGeneralSection),
+                _LaunchAtStartupRow(startup: settings.launchAtStartup),
+                const SizedBox(height: AppSpacing.xl),
+              ],
               _SectionTitle(l10n.settingsRecordingSection),
               Row(
                 children: [
@@ -68,6 +74,53 @@ class _SettingsDialog extends StatelessWidget {
         ),
       ),
       actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.commonClose))],
+    );
+  }
+}
+
+class _LaunchAtStartupRow extends StatefulWidget {
+  const _LaunchAtStartupRow({required this.startup});
+
+  final LaunchAtStartup startup;
+
+  @override
+  State<_LaunchAtStartupRow> createState() => _LaunchAtStartupRowState();
+}
+
+class _LaunchAtStartupRowState extends State<_LaunchAtStartupRow> {
+  bool? _enabled;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.startup.isEnabled().then((v) {
+      if (mounted) setState(() => _enabled = v);
+    }, onError: (_) {
+      if (mounted) setState(() => _enabled = false);
+    });
+  }
+
+  Future<void> _toggle(bool value) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final failed = AppLocalizations.of(context).settingsLaunchAtStartupFailed;
+    setState(() => _enabled = value);
+    try {
+      final actual = await widget.startup.setEnabled(value);
+      if (mounted) setState(() => _enabled = actual);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _enabled = !value);
+      messenger.showSnackBar(SnackBar(content: Text(failed)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SwitchListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(AppLocalizations.of(context).settingsLaunchAtStartup),
+      value: _enabled ?? false,
+      onChanged: _enabled == null ? null : _toggle,
     );
   }
 }

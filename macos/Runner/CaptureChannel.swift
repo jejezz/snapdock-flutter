@@ -1,5 +1,6 @@
 import Cocoa
 import FlutterMacOS
+import ServiceManagement
 
 /// Flutter와 네이티브 캡처를 잇는 MethodChannel.
 ///
@@ -50,6 +51,16 @@ enum CaptureChannel {
         CaptureConfig.videoDirectory = (args?["videoDir"] as? String).map { URL(fileURLWithPath: $0, isDirectory: true) }
         CaptureConfig.workDirectory = (args?["workDir"] as? String).map { URL(fileURLWithPath: $0, isDirectory: true) }
         result(nil)
+      case "launchAtLoginEnabled":
+        result(SMAppService.mainApp.status == .enabled)
+      case "setLaunchAtLogin":
+        let enabled = (call.arguments as? [String: Any])?["enabled"] as? Bool ?? false
+        do {
+          if enabled { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
+          result(SMAppService.mainApp.status == .enabled)
+        } catch {
+          result(FlutterError(code: "login_item", message: error.localizedDescription, details: nil))
+        }
       case "openFolder":
         let kind = (call.arguments as? [String: Any])?["kind"] as? String
         openSaveFolder(movies: kind == "movies")

@@ -115,6 +115,13 @@ class CaptureService {
         'workDir': workDir,
       });
 
+  /// macOS 로그인 항목에 등록돼 있는가.
+  Future<bool> launchAtLoginEnabled() async => await _channel.invokeMethod<bool>('launchAtLoginEnabled') ?? false;
+
+  /// macOS 로그인 항목을 켜거나 끄고 결과 상태를 돌려준다.
+  Future<bool> setLaunchAtLogin(bool enabled) async =>
+      await _channel.invokeMethod<bool>('setLaunchAtLogin', {'enabled': enabled}) ?? false;
+
   Future<void> openSaveFolder(SaveFolder folder) => _channel.invokeMethod<void>('openFolder', {'kind': folder.name});
 
   /// 디버그 빌드 전용: README 데모를 녹화할 영역(화면 좌표, 포인트)을 배경으로 덮는다. null이면 걷는다.

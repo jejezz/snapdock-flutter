@@ -286,6 +286,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsResetFolder => '기본값';
 
   @override
+  String get settingsGeneralSection => '일반';
+
+  @override
+  String get settingsLaunchAtStartup => '컴퓨터를 켤 때 자동으로 시작';
+
+  @override
+  String get settingsLaunchAtStartupFailed => '시작 프로그램 설정을 바꾸지 못했습니다.';
+
+  @override
   String get dockCollapseTooltip => '접기';
 
   @override

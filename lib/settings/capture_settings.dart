@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../capture/capture_service.dart';
+import 'launch_at_startup.dart';
 
 /// 캡처 설정: 녹화 길이와 저장 위치. 바뀔 때마다 저장하고 네이티브에도 알린다.
 class CaptureSettings extends ChangeNotifier {
@@ -21,6 +22,9 @@ class CaptureSettings extends ChangeNotifier {
 
   final SharedPreferences _prefs;
   final CaptureService _service;
+
+  /// 로그인할 때 자동으로 시작하는 설정. 값은 OS가 가지고 있어서 여기에 저장하지 않는다.
+  late final LaunchAtStartup launchAtStartup = LaunchAtStartup(_service);
 
   /// 네이티브가 녹화 파일을 쓰는 작업 폴더. 독이 보관하는 폴더와 같다.
   final String? _workDir;
