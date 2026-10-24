@@ -308,6 +308,19 @@ class AppLocalizationsKo extends AppLocalizations {
   String get trayQuit => '종료';
 
   @override
+  String get settingsShortcutsSection => '단축키';
+
+  @override
+  String get settingsShortcutCapture => '캡처 시작';
+
+  @override
+  String get settingsShortcutDock => '독 모드 전환';
+
+  @override
+  String get settingsShortcutDockNote =>
+      '트레이에 숨어 있으면 독으로 꺼내고, 창이 보이면 독과 일반 창을 번갈아 바꿉니다. 단축키는 다른 앱을 쓰는 중에도 동작합니다.';
+
+  @override
   String get settingsGeneralSection => '일반';
 
   @override

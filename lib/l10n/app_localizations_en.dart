@@ -311,6 +311,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get trayQuit => 'Quit';
 
   @override
+  String get settingsShortcutsSection => 'Shortcuts';
+
+  @override
+  String get settingsShortcutCapture => 'Start capture';
+
+  @override
+  String get settingsShortcutDock => 'Switch dock mode';
+
+  @override
+  String get settingsShortcutDockNote =>
+      'If Snapdock is hidden in the tray, this brings it up as the dock; if it is visible, it switches between the dock and the regular window. Shortcuts work while you use other apps.';
+
+  @override
   String get settingsGeneralSection => 'General';
 
   @override

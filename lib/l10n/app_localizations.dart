@@ -632,6 +632,30 @@ abstract class AppLocalizations {
   /// **'종료'**
   String get trayQuit;
 
+  /// No description provided for @settingsShortcutsSection.
+  ///
+  /// In ko, this message translates to:
+  /// **'단축키'**
+  String get settingsShortcutsSection;
+
+  /// No description provided for @settingsShortcutCapture.
+  ///
+  /// In ko, this message translates to:
+  /// **'캡처 시작'**
+  String get settingsShortcutCapture;
+
+  /// No description provided for @settingsShortcutDock.
+  ///
+  /// In ko, this message translates to:
+  /// **'독 모드 전환'**
+  String get settingsShortcutDock;
+
+  /// No description provided for @settingsShortcutDockNote.
+  ///
+  /// In ko, this message translates to:
+  /// **'트레이에 숨어 있으면 독으로 꺼내고, 창이 보이면 독과 일반 창을 번갈아 바꿉니다. 단축키는 다른 앱을 쓰는 중에도 동작합니다.'**
+  String get settingsShortcutDockNote;
+
   /// No description provided for @settingsGeneralSection.
   ///
   /// In ko, this message translates to:
