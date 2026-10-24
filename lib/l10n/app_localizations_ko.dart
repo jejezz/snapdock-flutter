@@ -286,6 +286,28 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsResetFolder => '기본값';
 
   @override
+  String get settingsHideInTray => '닫으면 트레이로 숨기기';
+
+  @override
+  String get settingsHideInTrayNote =>
+      '창을 닫아도 앱이 계속 실행되어 단축키로 캡처할 수 있습니다. 시작 프로그램으로 켜면 창 없이 시작합니다.';
+
+  @override
+  String get trayOpenWindow => '창 열기';
+
+  @override
+  String get trayOpenDock => '독 열기';
+
+  @override
+  String get trayCapture => '캡처 시작';
+
+  @override
+  String get trayHide => '트레이로 숨기기';
+
+  @override
+  String get trayQuit => '종료';
+
+  @override
   String get settingsGeneralSection => '일반';
 
   @override

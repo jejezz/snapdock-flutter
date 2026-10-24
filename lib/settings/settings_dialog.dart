@@ -36,6 +36,13 @@ class _SettingsDialog extends StatelessWidget {
               if (settings.launchAtStartup.isSupported) ...[
                 _SectionTitle(l10n.settingsGeneralSection),
                 _LaunchAtStartupRow(startup: settings.launchAtStartup),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l10n.settingsHideInTray),
+                  subtitle: Text(l10n.settingsHideInTrayNote),
+                  value: settings.hideInTray,
+                  onChanged: settings.setHideInTray,
+                ),
                 const SizedBox(height: AppSpacing.xl),
               ],
               _SectionTitle(l10n.settingsRecordingSection),

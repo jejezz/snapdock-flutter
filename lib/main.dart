@@ -29,9 +29,11 @@ import 'dock/dock_window.dart';
 import 'l10n/app_localizations.dart';
 import 'settings/app_settings.dart';
 import 'settings/capture_settings.dart';
+import 'settings/launch_at_startup.dart';
 import 'settings/settings_dialog.dart';
 import 'settings/settings_menus.dart';
 import 'theme/app_theme.dart';
+import 'tray/tray_controller.dart';
 import 'update/update_scope.dart';
 import 'update/update_service.dart';
 import 'window/focus_tint.dart';
@@ -39,7 +41,7 @@ import 'window/focus_tint.dart';
 final bool _isDesktop =
     Platform.isMacOS || Platform.isWindows || Platform.isLinux;
 
-Future<void> main() async {
+Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   registerExtraLicenses();
 
@@ -50,6 +52,8 @@ Future<void> main() async {
   final captureSettings = await CaptureSettings.load(captureService, workDir: storeDir.path);
   final captures = CaptureController(captureService, storeDir: storeDir);
   await captures.load();
+
+  final startHidden = args.contains(LaunchAtStartup.hiddenFlag) && captureSettings.hideInTray && TrayController.isSupported;
 
   if (_isDesktop) {
     await windowManager.ensureInitialized();
@@ -66,6 +70,11 @@ Future<void> main() async {
       if (captureSettings.dockMode) {
         final size = DockSize.values[captureSettings.dockSizeIndex.clamp(0, DockSize.values.length - 1)];
         await DockWindow.enter(DockWindow.sizeFor(count: captures.items.length, size: size, collapsed: captureSettings.dockCollapsed));
+      }
+      // 로그인으로 시작했고 트레이 숨김이 켜져 있으면 창 없이 트레이에서만 시작한다.
+      if (startHidden) {
+        await windowManager.setSkipTaskbar(true);
+        return;
       }
       await windowManager.show();
       await windowManager.focus();
@@ -108,7 +117,50 @@ class _AppState extends State<App> with WidgetsBindingObserver {
     widget.settings.addListener(_syncWindowBrightness);
     _syncWindowBrightness();
     widget.updates?.startAutomaticCheck(_navigatorKey);
-    if (_isDesktop) _registerCaptureHotkey();
+    if (_isDesktop) {
+      _registerCaptureHotkey();
+      _tray = TrayController(
+        settings: widget.captureSettings,
+        labels: _trayLabels(),
+        onCapture: _captures.capture,
+      );
+      widget.captureSettings.addListener(_syncTray);
+      widget.settings.addListener(_syncTray);
+      _registerDockHotkey();
+      WidgetsBinding.instance.addPostFrameCallback((_) => _syncTray());
+    }
+  }
+
+  TrayController? _tray;
+
+  TrayLabels _trayLabels() {
+    final context = _navigatorKey.currentContext;
+    final l10n = context == null ? lookupAppLocalizations(const Locale('en')) : AppLocalizations.of(context);
+    return TrayLabels(
+      tooltip: AppIdentity.displayName,
+      openWindow: l10n.trayOpenWindow,
+      openDock: l10n.trayOpenDock,
+      capture: l10n.trayCapture,
+      hide: l10n.trayHide,
+      quit: l10n.trayQuit,
+    );
+  }
+
+  void _syncTray() {
+    final tray = _tray;
+    if (tray == null) return;
+    tray.labels = _trayLabels();
+    tray.sync();
+  }
+
+  /// 전역 단축키 ⌥⇧D. 트레이에 숨어 있어도 독으로 꺼내고, 보이면 독과 창을 번갈아 바꾼다.
+  Future<void> _registerDockHotkey() async {
+    final hotKey = HotKey(
+      key: PhysicalKeyboardKey.keyD,
+      modifiers: [HotKeyModifier.alt, HotKeyModifier.shift],
+      scope: HotKeyScope.system,
+    );
+    await hotKeyManager.register(hotKey, keyDownHandler: (_) => _tray?.toggleDock());
   }
 
   /// 전역 단축키 ⌥⇧S. 다른 앱을 쓰는 중에도 캡처를 시작한다.
@@ -127,6 +179,8 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   @override
   void dispose() {
     widget.settings.removeListener(_syncWindowBrightness);
+    widget.settings.removeListener(_syncTray);
+    widget.captureSettings.removeListener(_syncTray);
     WidgetsBinding.instance.removeObserver(this);
     _captures.dispose();
     super.dispose();
@@ -224,6 +278,13 @@ class _HomeScreenState extends State<HomeScreen> {
       DemoHooks.cycleDockSize = _cycleDockSize;
       DemoHooks.toggleCollapsed = _toggleCollapsed;
     }
+    WindowModeHooks.isDock = () => _dock;
+    WindowModeHooks.showAsDock = () async {
+      if (!_dock) await _enterDock();
+    };
+    WindowModeHooks.showAsWindow = () async {
+      if (_dock) await _exitDock();
+    };
     if (_isDesktop) _captures.refreshPermission();
   }
 
@@ -232,6 +293,9 @@ class _HomeScreenState extends State<HomeScreen> {
     _captures.removeListener(_onCapturesChanged);
     DemoHooks.cycleDockSize = null;
     DemoHooks.toggleCollapsed = null;
+    WindowModeHooks.isDock = null;
+    WindowModeHooks.showAsDock = null;
+    WindowModeHooks.showAsWindow = null;
     super.dispose();
   }
 

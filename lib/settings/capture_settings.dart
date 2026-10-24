@@ -19,6 +19,7 @@ class CaptureSettings extends ChangeNotifier {
   static const _kDockMode = 'dock_mode';
   static const _kDockSize = 'dock_size';
   static const _kDockCollapsed = 'dock_collapsed';
+  static const _kHideInTray = 'hide_in_tray';
 
   final SharedPreferences _prefs;
   final CaptureService _service;
@@ -41,6 +42,14 @@ class CaptureSettings extends ChangeNotifier {
 
   /// 독을 알약 모양으로 접어 두었는가.
   bool get dockCollapsed => _prefs.getBool(_kDockCollapsed) ?? false;
+
+  /// 창을 닫으면 종료하지 않고 트레이로 숨기는가.
+  bool get hideInTray => _prefs.getBool(_kHideInTray) ?? false;
+
+  Future<void> setHideInTray(bool value) async {
+    await _prefs.setBool(_kHideInTray, value);
+    notifyListeners();
+  }
 
   Future<void> setDockCollapsed(bool value) => _prefs.setBool(_kDockCollapsed, value);
 
