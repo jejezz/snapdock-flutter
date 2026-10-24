@@ -78,6 +78,7 @@ flutter:
   assets:
     - assets/icon/app_icon.png
     - assets/icon/tray_icon.ico
+    - assets/icon/tray_icon_mac.png
     - assets/licenses/
 
   fonts:
