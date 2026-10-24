@@ -54,7 +54,12 @@ class TrayController with TrayListener, WindowListener {
       trayManager.addListener(this);
       windowManager.addListener(this);
       await windowManager.setPreventClose(true);
-      await trayManager.setIcon(Platform.isWindows ? 'assets/icon/tray_icon.ico' : 'assets/icon/app_icon.png');
+      if (Platform.isWindows) {
+        await trayManager.setIcon('assets/icon/tray_icon.ico');
+      } else {
+        // 단색 템플릿 이미지: 메뉴바의 라이트/다크에 맞춰 macOS가 색을 입힌다.
+        await trayManager.setIcon('assets/icon/tray_icon_mac.png', isTemplate: true);
+      }
     } else if (!want && _active) {
       _active = false;
       trayManager.removeListener(this);
