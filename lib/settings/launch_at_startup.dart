@@ -9,6 +9,9 @@ class LaunchAtStartup {
   final CaptureService _service;
 
   static const _runKey = r'HKCU\Software\Microsoft\Windows\CurrentVersion\Run';
+  /// 로그인으로 시작할 때 붙는 인자. 트레이 숨김이 켜져 있으면 창 없이 시작한다.
+  static const hiddenFlag = '--hidden';
+
   static const _valueName = 'Snapdock';
 
   bool get isSupported => Platform.isWindows || Platform.isMacOS;
@@ -25,7 +28,7 @@ class LaunchAtStartup {
     if (Platform.isMacOS) return _service.setLaunchAtLogin(enabled);
     if (!Platform.isWindows) return false;
     final args = enabled
-        ? ['add', _runKey, '/v', _valueName, '/t', 'REG_SZ', '/d', '"${Platform.resolvedExecutable}"', '/f']
+        ? ['add', _runKey, '/v', _valueName, '/t', 'REG_SZ', '/d', '"${Platform.resolvedExecutable}" $hiddenFlag', '/f']
         : ['delete', _runKey, '/v', _valueName, '/f'];
     final result = await Process.run('reg', args);
     if (result.exitCode != 0 && (enabled || await isEnabled())) {

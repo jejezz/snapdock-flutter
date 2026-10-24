@@ -54,6 +54,7 @@ dependencies:
   file_selector: ^1.1.0
   screen_retriever: ^0.2.2
   path_provider: ^2.1.6
+  tray_manager: 0.5.2
 
 dev_dependencies:
   flutter_test:
@@ -76,6 +77,7 @@ flutter:
 
   assets:
     - assets/icon/app_icon.png
+    - assets/icon/tray_icon.ico
     - assets/licenses/
 
   fonts:

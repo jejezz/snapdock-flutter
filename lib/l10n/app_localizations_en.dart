@@ -289,6 +289,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsResetFolder => 'Default';
 
   @override
+  String get settingsHideInTray => 'Hide in tray when closed';
+
+  @override
+  String get settingsHideInTrayNote =>
+      'Closing the window keeps Snapdock running so the shortcuts still work. When it starts at login, it starts without a window.';
+
+  @override
+  String get trayOpenWindow => 'Open window';
+
+  @override
+  String get trayOpenDock => 'Open dock';
+
+  @override
+  String get trayCapture => 'Start capture';
+
+  @override
+  String get trayHide => 'Hide in tray';
+
+  @override
+  String get trayQuit => 'Quit';
+
+  @override
   String get settingsGeneralSection => 'General';
 
   @override

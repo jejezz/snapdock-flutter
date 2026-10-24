@@ -590,6 +590,48 @@ abstract class AppLocalizations {
   /// **'기본값'**
   String get settingsResetFolder;
 
+  /// No description provided for @settingsHideInTray.
+  ///
+  /// In ko, this message translates to:
+  /// **'닫으면 트레이로 숨기기'**
+  String get settingsHideInTray;
+
+  /// No description provided for @settingsHideInTrayNote.
+  ///
+  /// In ko, this message translates to:
+  /// **'창을 닫아도 앱이 계속 실행되어 단축키로 캡처할 수 있습니다. 시작 프로그램으로 켜면 창 없이 시작합니다.'**
+  String get settingsHideInTrayNote;
+
+  /// No description provided for @trayOpenWindow.
+  ///
+  /// In ko, this message translates to:
+  /// **'창 열기'**
+  String get trayOpenWindow;
+
+  /// No description provided for @trayOpenDock.
+  ///
+  /// In ko, this message translates to:
+  /// **'독 열기'**
+  String get trayOpenDock;
+
+  /// No description provided for @trayCapture.
+  ///
+  /// In ko, this message translates to:
+  /// **'캡처 시작'**
+  String get trayCapture;
+
+  /// No description provided for @trayHide.
+  ///
+  /// In ko, this message translates to:
+  /// **'트레이로 숨기기'**
+  String get trayHide;
+
+  /// No description provided for @trayQuit.
+  ///
+  /// In ko, this message translates to:
+  /// **'종료'**
+  String get trayQuit;
+
   /// No description provided for @settingsGeneralSection.
   ///
   /// In ko, this message translates to:
