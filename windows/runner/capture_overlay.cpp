@@ -631,7 +631,7 @@ std::vector<uint8_t> Overlay::RenderPng(Bgra* image, bool circle) const {
       }
     }
   }
-  return EncodePng(*image);
+  return EncodeScreenshotPng(*image, shape_);
 }
 
 void Overlay::Confirm(Action action) {
@@ -672,7 +672,7 @@ void Overlay::ChooseScreen() {
   result.image.shape = Shape::kScreen;
   result.image.width = image.width;
   result.image.height = image.height;
-  result.image.png = EncodePng(image);
+  result.image.png = EncodeScreenshotPng(image, Shape::kScreen);
   if (result.image.png.empty()) {
     Finish(OverlayResult(), false, {}, false);
     return;

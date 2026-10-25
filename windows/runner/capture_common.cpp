@@ -11,6 +11,7 @@ int CaptureConfig::max_seconds = 10;
 std::wstring CaptureConfig::image_dir;
 std::wstring CaptureConfig::video_dir;
 std::wstring CaptureConfig::work_dir;
+bool CaptureConfig::embed_metadata = false;
 
 std::wstring CaptureConfig::SaveFolder(bool movies) {
   const std::wstring& custom = movies ? video_dir : image_dir;
@@ -77,6 +78,54 @@ std::vector<uint8_t> SaveBitmapAsPng(Gdiplus::Bitmap& bitmap) {
   return bytes;
 }
 
+const char* ShapeName(Shape shape) {
+  switch (shape) {
+    case Shape::kCircle: return "circle";
+    case Shape::kWindow: return "window";
+    case Shape::kScreen: return "screen";
+    default: return "rect";
+  }
+}
+
+// GetVersionEx는 매니페스트에 따라 거짓말을 해서 RtlGetVersion을 쓴다.
+std::string WindowsVersion() {
+  using RtlGetVersionFn = LONG(WINAPI*)(OSVERSIONINFOW*);
+  OSVERSIONINFOW info = {};
+  info.dwOSVersionInfoSize = sizeof(info);
+  if (HMODULE ntdll = GetModuleHandleW(L"ntdll.dll")) {
+    if (auto fn = reinterpret_cast<RtlGetVersionFn>(GetProcAddress(ntdll, "RtlGetVersion"))) fn(&info);
+  }
+  char buffer[64];
+  snprintf(buffer, sizeof(buffer), "Windows %lu.%lu.%lu", info.dwMajorVersion, info.dwMinorVersion, info.dwBuildNumber);
+  return buffer;
+}
+
+void SetAsciiProperty(Gdiplus::Bitmap& bitmap, PROPID id, const std::string& text) {
+  Gdiplus::PropertyItem item = {};
+  item.id = id;
+  item.type = PropertyTagTypeASCII;
+  item.length = static_cast<ULONG>(text.size() + 1);  // 끝의 NUL까지
+  item.value = const_cast<char*>(text.c_str());
+  bitmap.SetPropertyItem(&item);  // GDI+가 값을 복사해 간다
+}
+
+// 스크린샷에 적는 정보. GDI+ PNG 인코더는 Description·Software·DateTime을 텍스트 청크로 쓴다.
+void AddScreenshotMetadata(Gdiplus::Bitmap& bitmap, Shape shape) {
+  SYSTEMTIME now;
+  GetLocalTime(&now);
+  char time[32];
+  snprintf(time, sizeof(time), "%04d:%02d:%02d %02d:%02d:%02d", now.wYear, now.wMonth, now.wDay, now.wHour,
+           now.wMinute, now.wSecond);
+  UINT dpi = GetDpiForSystem();
+  char description[160];
+  snprintf(description, sizeof(description), "Snapdock screenshot (%s, display scale %u%%) on %s", ShapeName(shape),
+           dpi * 100 / 96, WindowsVersion().c_str());
+  SetAsciiProperty(bitmap, PropertyTagImageDescription, description);
+  SetAsciiProperty(bitmap, PropertyTagSoftwareUsed, std::string("Snapdock ") + FLUTTER_VERSION);
+  SetAsciiProperty(bitmap, PropertyTagDateTime, time);
+  SetAsciiProperty(bitmap, PropertyTagExifDTOrig, time);
+}
+
 }  // namespace
 
 void StartGdiplus() {
@@ -105,6 +154,14 @@ std::vector<uint8_t> EncodePng(const Bgra& image) {
   if (image.width <= 0 || image.height <= 0) return {};
   Gdiplus::Bitmap bitmap(image.width, image.height, image.width * 4, PixelFormat32bppARGB,
                          const_cast<uint8_t*>(image.pixels.data()));
+  return SaveBitmapAsPng(bitmap);
+}
+
+std::vector<uint8_t> EncodeScreenshotPng(const Bgra& image, Shape shape) {
+  if (image.width <= 0 || image.height <= 0) return {};
+  Gdiplus::Bitmap bitmap(image.width, image.height, image.width * 4, PixelFormat32bppARGB,
+                         const_cast<uint8_t*>(image.pixels.data()));
+  if (CaptureConfig::embed_metadata) AddScreenshotMetadata(bitmap, shape);
   return SaveBitmapAsPng(bitmap);
 }
 

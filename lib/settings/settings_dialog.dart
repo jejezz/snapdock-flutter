@@ -85,7 +85,7 @@ class _SettingsDialog extends StatelessWidget {
                 defaultLabel: l10n.settingsVideoFolderDefault,
                 onChanged: settings.setVideoDir,
               ),
-              if (mac) ...[
+              if (Platform.isMacOS || Platform.isWindows) ...[
                 const SizedBox(height: AppSpacing.xl),
                 _SectionTitle(l10n.settingsMetadataSection),
                 SwitchListTile(

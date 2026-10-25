@@ -31,6 +31,8 @@ struct CaptureConfig {
   static std::wstring image_dir;  // 비어 있으면 사진\Snapdock
   static std::wstring video_dir;  // 비어 있으면 동영상\Snapdock
   static std::wstring work_dir;   // 비어 있으면 %TEMP%\Snapdock
+  // 스크린샷 PNG에 앱·시각·OS·캡처 종류를 적는가. 위치와 창 제목은 넣지 않는다.
+  static bool embed_metadata;
 
   static std::wstring SaveFolder(bool movies);
   static std::wstring WorkFolder();
@@ -49,6 +51,8 @@ std::string ToUtf8(const std::wstring& wide);
 std::wstring ToWide(const std::string& utf8);
 
 std::vector<uint8_t> EncodePng(const Bgra& image);
+// 스크린샷용 PNG. CaptureConfig::embed_metadata가 켜져 있으면 촬영 정보를 함께 적는다.
+std::vector<uint8_t> EncodeScreenshotPng(const Bgra& image, Shape shape);
 bool DecodePng(const std::vector<uint8_t>& png, Bgra* out);
 // 긴 변이 max_side 이하가 되도록 줄인 PNG. 이미 작으면 그대로 인코딩한다.
 std::vector<uint8_t> EncodeThumbnailPng(const Bgra& image, int max_side);

@@ -268,6 +268,10 @@ class Handler {
     CaptureConfig::image_dir = StringArg(args, "imageDir");
     CaptureConfig::video_dir = StringArg(args, "videoDir");
     CaptureConfig::work_dir = StringArg(args, "workDir");
+    CaptureConfig::embed_metadata = false;
+    if (const EncodableValue* v = Find(args, "embedMetadata")) {
+      if (const auto* b = std::get_if<bool>(v)) CaptureConfig::embed_metadata = *b;
+    }
   }
 
   void CaptureRegion(const EncodableMap* args, std::shared_ptr<Result> result) {
