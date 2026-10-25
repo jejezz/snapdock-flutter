@@ -14,11 +14,56 @@ enum CaptureConfig {
   static var videoDirectory: URL?
   /// 녹화 파일을 처음 쓰는 곳. 독이 보관하는 폴더다. nil이면 임시 폴더.
   static var workDirectory: URL?
+  /// 스크린샷 PNG에 앱·시각·OS·캡처 종류를 적어 넣는가. 위치나 창 제목은 넣지 않는다.
+  static var embedMetadata = false
 
   static func saveFolder(movies: Bool) -> URL? {
     if let custom = movies ? videoDirectory : imageDirectory { return custom }
     let base: FileManager.SearchPathDirectory = movies ? .moviesDirectory : .picturesDirectory
     return FileManager.default.urls(for: base, in: .userDomainMask).first?.appendingPathComponent("Snapdock", isDirectory: true)
+  }
+}
+
+/// 스크린샷 PNG의 텍스트 정보(Software, Description, Exif 촬영 시각). 중요하지 않은 정보만 넣는다.
+enum CaptureMetadata {
+  static func embed(in png: Data, shape: CaptureShape, pixelScale: CGFloat) -> Data {
+    guard CaptureConfig.embedMetadata,
+          let source = CGImageSourceCreateWithData(png as CFData, nil),
+          let type = CGImageSourceGetType(source) else { return png }
+
+    let info = Bundle.main.infoDictionary
+    let version = info?["CFBundleShortVersionString"] as? String ?? ""
+    let os = ProcessInfo.processInfo.operatingSystemVersion
+    let time = DateFormatter()
+    time.locale = Locale(identifier: "en_US_POSIX")
+    time.dateFormat = "yyyy:MM:dd HH:mm:ss"
+    let offset = DateFormatter()
+    offset.locale = Locale(identifier: "en_US_POSIX")
+    offset.dateFormat = "xxx"
+    let now = Date()
+    let software = "Snapdock \(version)".trimmingCharacters(in: .whitespaces)
+    let description = "Snapdock screenshot (\(shape.rawValue), display scale \(Int(pixelScale))x) on macOS \(os.majorVersion).\(os.minorVersion).\(os.patchVersion)"
+
+    // ImageIO는 PNG 딕셔너리의 Creation Time·Source를 버리므로 시각은 Exif에 적는다.
+    let properties: [CFString: Any] = [
+      kCGImagePropertyPNGDictionary: [
+        kCGImagePropertyPNGSoftware: software,
+        kCGImagePropertyPNGDescription: description,
+      ] as [CFString: Any],
+      kCGImagePropertyExifDictionary: [
+        kCGImagePropertyExifDateTimeOriginal: time.string(from: now),
+        kCGImagePropertyExifOffsetTimeOriginal: offset.string(from: now),
+      ] as [CFString: Any],
+      kCGImagePropertyTIFFDictionary: [
+        kCGImagePropertyTIFFSoftware: software,
+        kCGImagePropertyTIFFDateTime: time.string(from: now),
+      ] as [CFString: Any],
+    ]
+
+    let out = NSMutableData()
+    guard let destination = CGImageDestinationCreateWithData(out, type, 1, nil) else { return png }
+    CGImageDestinationAddImageFromSource(destination, source, 0, properties as CFDictionary)
+    return CGImageDestinationFinalize(destination) ? out as Data : png
   }
 }
 

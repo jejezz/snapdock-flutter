@@ -271,6 +271,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsFoldersSection => 'Save locations';
 
   @override
+  String get settingsMetadataSection => 'Screenshot info';
+
+  @override
+  String get settingsEmbedMetadata => 'Embed capture info in PNG';
+
+  @override
+  String get settingsEmbedMetadataNote =>
+      'Writes the capture time, Snapdock version, OS version and capture type into the PNG file. Location and window titles are never included. It goes along when you save the file or drag it into another app.';
+
+  @override
   String get settingsImageFolder => 'Images (PNG, GIF)';
 
   @override

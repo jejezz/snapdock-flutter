@@ -20,6 +20,7 @@ class CaptureSettings extends ChangeNotifier {
   static const _kDockSize = 'dock_size';
   static const _kDockCollapsed = 'dock_collapsed';
   static const _kHideInTray = 'hide_in_tray';
+  static const _kEmbedMetadata = 'embed_metadata';
 
   final SharedPreferences _prefs;
   final CaptureService _service;
@@ -48,6 +49,15 @@ class CaptureSettings extends ChangeNotifier {
 
   Future<void> setHideInTray(bool value) async {
     await _prefs.setBool(_kHideInTray, value);
+    notifyListeners();
+  }
+
+  /// 스크린샷 PNG에 앱·시각·OS·캡처 종류를 적어 넣는가. 위치는 넣지 않는다.
+  bool get embedMetadata => _prefs.getBool(_kEmbedMetadata) ?? false;
+
+  Future<void> setEmbedMetadata(bool value) async {
+    await _prefs.setBool(_kEmbedMetadata, value);
+    await apply();
     notifyListeners();
   }
 
@@ -117,7 +127,7 @@ class CaptureSettings extends ChangeNotifier {
   /// 현재 값을 네이티브 캡처에 보낸다. 네이티브가 없는 플랫폼에서는 조용히 넘어간다.
   Future<void> apply() async {
     try {
-      await _service.configure(maxSeconds: _maxSeconds, imageDir: _imageDir, videoDir: _videoDir, workDir: _workDir);
+      await _service.configure(maxSeconds: _maxSeconds, imageDir: _imageDir, videoDir: _videoDir, workDir: _workDir, embedMetadata: embedMetadata);
     } on MissingPluginException {
       debugPrint('Snapdock: native capture is not available on this platform yet');
     }
