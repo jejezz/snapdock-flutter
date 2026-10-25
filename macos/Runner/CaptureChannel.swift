@@ -50,6 +50,7 @@ enum CaptureChannel {
         CaptureConfig.imageDirectory = (args?["imageDir"] as? String).map { URL(fileURLWithPath: $0, isDirectory: true) }
         CaptureConfig.videoDirectory = (args?["videoDir"] as? String).map { URL(fileURLWithPath: $0, isDirectory: true) }
         CaptureConfig.workDirectory = (args?["workDir"] as? String).map { URL(fileURLWithPath: $0, isDirectory: true) }
+        CaptureConfig.embedMetadata = args?["embedMetadata"] as? Bool ?? false
         result(nil)
       case "launchAtLoginEnabled":
         result(SMAppService.mainApp.status == .enabled)

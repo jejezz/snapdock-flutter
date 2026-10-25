@@ -554,6 +554,24 @@ abstract class AppLocalizations {
   /// **'저장 위치'**
   String get settingsFoldersSection;
 
+  /// No description provided for @settingsMetadataSection.
+  ///
+  /// In ko, this message translates to:
+  /// **'스크린샷 정보'**
+  String get settingsMetadataSection;
+
+  /// No description provided for @settingsEmbedMetadata.
+  ///
+  /// In ko, this message translates to:
+  /// **'PNG에 촬영 정보 넣기'**
+  String get settingsEmbedMetadata;
+
+  /// No description provided for @settingsEmbedMetadataNote.
+  ///
+  /// In ko, this message translates to:
+  /// **'캡처한 시각, Snapdock 버전, OS 버전, 캡처 종류를 PNG 파일 안에 적어 둡니다. 위치와 창 제목은 넣지 않습니다. 파일로 저장하거나 끌어서 붙여넣을 때 함께 나갑니다.'**
+  String get settingsEmbedMetadataNote;
+
   /// No description provided for @settingsImageFolder.
   ///
   /// In ko, this message translates to:

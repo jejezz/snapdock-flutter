@@ -85,6 +85,17 @@ class _SettingsDialog extends StatelessWidget {
                 defaultLabel: l10n.settingsVideoFolderDefault,
                 onChanged: settings.setVideoDir,
               ),
+              if (mac) ...[
+                const SizedBox(height: AppSpacing.xl),
+                _SectionTitle(l10n.settingsMetadataSection),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l10n.settingsEmbedMetadata),
+                  subtitle: Text(l10n.settingsEmbedMetadataNote),
+                  value: settings.embedMetadata,
+                  onChanged: settings.setEmbedMetadata,
+                ),
+              ],
             ],
           ),
         ),

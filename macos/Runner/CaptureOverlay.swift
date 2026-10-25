@@ -575,10 +575,11 @@ private final class OverlayView: NSView {
   @objc private func closeTapped() { onFinish?(nil) }
 
   @objc private func screenTapped() {
-    guard let png = renderPNG(cropping: CGRect(x: 0, y: 0, width: image.width, height: image.height), as: .rect) else {
+    guard let raw = renderPNG(cropping: CGRect(x: 0, y: 0, width: image.width, height: image.height), as: .rect) else {
       onFinish?(nil)
       return
     }
+    let png = CaptureMetadata.embed(in: raw, shape: .screen, pixelScale: pixelScale)
     finishWithFlash(.image(CaptureOutcome(action: .copy, shape: .screen, png: png, width: image.width, height: image.height)), region: bounds)
   }
 
@@ -641,10 +642,11 @@ private final class OverlayView: NSView {
     }
     let s = pixelScale
     let crop = CGRect(x: r.minX * s, y: r.minY * s, width: r.width * s, height: r.height * s)
-    guard let png = renderPNG(cropping: crop, as: shape) else {
+    guard let raw = renderPNG(cropping: crop, as: shape) else {
       onFinish?(nil)
       return
     }
+    let png = CaptureMetadata.embed(in: raw, shape: shape, pixelScale: s)
     let (w, h) = pixelSize(of: r)
     finishWithFlash(.image(CaptureOutcome(action: action, shape: shape, png: png, width: w, height: h)), region: r)
   }
@@ -662,10 +664,11 @@ private final class OverlayView: NSView {
         config.showsCursor = false
         config.ignoreShadowsSingleWindow = true
         let shot = try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
-        guard let png = NSBitmapImageRep(cgImage: shot).representation(using: .png, properties: [:]) else {
+        guard let raw = NSBitmapImageRep(cgImage: shot).representation(using: .png, properties: [:]) else {
           onFinish?(nil)
           return
         }
+        let png = CaptureMetadata.embed(in: raw, shape: .window, pixelScale: scale)
         finishWithFlash(.image(CaptureOutcome(action: action, shape: .window, png: png, width: shot.width, height: shot.height)), region: target.rect)
       } catch {
         onFinish?(nil)

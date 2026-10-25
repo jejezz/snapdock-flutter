@@ -107,12 +107,13 @@ class CaptureService {
       _channel.invokeMethod<String>('saveFile', {'path': path});
 
   /// 설정을 네이티브에 알린다. 폴더가 null이면 기본 위치(사진/동영상 폴더의 Snapdock)를 쓴다.
-  Future<void> configure({required int maxSeconds, String? imageDir, String? videoDir, String? workDir}) =>
+  Future<void> configure({required int maxSeconds, String? imageDir, String? videoDir, String? workDir, bool embedMetadata = false}) =>
       _channel.invokeMethod<void>('configure', {
         'maxSeconds': maxSeconds,
         'imageDir': imageDir,
         'videoDir': videoDir,
         'workDir': workDir,
+        'embedMetadata': embedMetadata,
       });
 
   /// macOS 로그인 항목에 등록돼 있는가.
