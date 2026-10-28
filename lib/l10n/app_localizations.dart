@@ -134,12 +134,6 @@ abstract class AppLocalizations {
   /// **'{appName} 정보'**
   String aboutMenuItem(String appName);
 
-  /// No description provided for @themeMenuTooltip.
-  ///
-  /// In ko, this message translates to:
-  /// **'테마'**
-  String get themeMenuTooltip;
-
   /// No description provided for @themeSystem.
   ///
   /// In ko, this message translates to:
@@ -157,12 +151,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'다크'**
   String get themeDark;
-
-  /// No description provided for @languageMenuTooltip.
-  ///
-  /// In ko, this message translates to:
-  /// **'언어'**
-  String get languageMenuTooltip;
 
   /// No description provided for @languageSystem.
   ///
@@ -523,6 +511,96 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'설정'**
   String get settingsTitle;
+
+  /// No description provided for @settingsSectionDisplay.
+  ///
+  /// In ko, this message translates to:
+  /// **'화면'**
+  String get settingsSectionDisplay;
+
+  /// No description provided for @settingsSectionLanguage.
+  ///
+  /// In ko, this message translates to:
+  /// **'언어'**
+  String get settingsSectionLanguage;
+
+  /// No description provided for @settingsBrightness.
+  ///
+  /// In ko, this message translates to:
+  /// **'테마'**
+  String get settingsBrightness;
+
+  /// No description provided for @settingsPalette.
+  ///
+  /// In ko, this message translates to:
+  /// **'색 구성'**
+  String get settingsPalette;
+
+  /// No description provided for @settingsPaletteSaturn.
+  ///
+  /// In ko, this message translates to:
+  /// **'새턴'**
+  String get settingsPaletteSaturn;
+
+  /// No description provided for @settingsPaletteTeal.
+  ///
+  /// In ko, this message translates to:
+  /// **'틸'**
+  String get settingsPaletteTeal;
+
+  /// No description provided for @settingsPaletteAmber.
+  ///
+  /// In ko, this message translates to:
+  /// **'앰버'**
+  String get settingsPaletteAmber;
+
+  /// No description provided for @settingsPaletteRose.
+  ///
+  /// In ko, this message translates to:
+  /// **'로즈'**
+  String get settingsPaletteRose;
+
+  /// No description provided for @settingsPaletteSlate.
+  ///
+  /// In ko, this message translates to:
+  /// **'슬레이트'**
+  String get settingsPaletteSlate;
+
+  /// No description provided for @settingsPaletteHighContrast.
+  ///
+  /// In ko, this message translates to:
+  /// **'고대비'**
+  String get settingsPaletteHighContrast;
+
+  /// No description provided for @settingsFontSize.
+  ///
+  /// In ko, this message translates to:
+  /// **'글자 크기'**
+  String get settingsFontSize;
+
+  /// No description provided for @fontScaleSmall.
+  ///
+  /// In ko, this message translates to:
+  /// **'작게'**
+  String get fontScaleSmall;
+
+  /// No description provided for @fontScaleNormal.
+  ///
+  /// In ko, this message translates to:
+  /// **'보통'**
+  String get fontScaleNormal;
+
+  /// No description provided for @fontScaleLarge.
+  ///
+  /// In ko, this message translates to:
+  /// **'크게'**
+  String get fontScaleLarge;
+
+  /// No description provided for @settingsLanguage.
+  ///
+  /// In ko, this message translates to:
+  /// **'언어'**
+  String get settingsLanguage;
 
   /// No description provided for @settingsRecordingSection.
   ///

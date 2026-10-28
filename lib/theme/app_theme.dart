@@ -44,6 +44,25 @@ abstract final class AppColors {
   static const dangerTextLight = Color(0xFFC81E24);
 }
 
+/// 색 구성(color theme). 밝기와 독립이고, 고대비를 뺀 나머지는 주색만 바꾼다
+/// (settings.md). 저장 값은 [name].
+enum ColorPalette {
+  saturn(Color(0xFF4C9DFF), Color(0xFF2C6BE0)),
+  teal(Color(0xFF2DD4BF), Color(0xFF0F766E)),
+  amber(Color(0xFFFBBF24), Color(0xFFB45309)),
+  rose(Color(0xFFFB7185), Color(0xFFBE123C)),
+  slate(Color(0xFF94A3B8), Color(0xFF475569)),
+  highContrast(Color(0xFFFFD60A), Color(0xFF0000CC));
+
+  const ColorPalette(this._dark, this._light);
+
+  final Color _dark;
+  final Color _light;
+
+  Color primaryFor(Brightness brightness) =>
+      brightness == Brightness.dark ? _dark : _light;
+}
+
 abstract final class AppRadius {
   static const sheet = 32.0;
   static const card = 24.0;
@@ -67,88 +86,182 @@ abstract final class AppFonts {
   static const family = 'SeoulNamsan';
 
   /// SeoulNamsan에 없는 글자를 OS 한글 글꼴로 넘긴다 (fonts.md §2).
-  static const fallback = ['Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans CJK KR', 'Noto Sans KR'];
+  static const fallback = [
+    'Apple SD Gothic Neo',
+    'Malgun Gothic',
+    'Noto Sans CJK KR',
+    'Noto Sans KR',
+  ];
 
   /// 파일 이름·경로 등 앱이 통제하지 않는 문자열 (fonts.md §3).
   static const userContent = TextStyle(fontFamilyFallback: fallback);
 
   /// 로그, 16진수, 체크섬 (fonts.md §4). 'monospace'는 데스크톱에서 해석되지 않는다.
-  static const mono = TextStyle(fontFamily: 'Menlo', fontFamilyFallback: [
-    'SF Mono', 'Consolas', 'Cascadia Mono', 'DejaVu Sans Mono', 'Noto Sans Mono', 'Courier New',
-  ]);
+  static const mono = TextStyle(
+    fontFamily: 'Menlo',
+    fontFamilyFallback: [
+      'SF Mono',
+      'Consolas',
+      'Cascadia Mono',
+      'DejaVu Sans Mono',
+      'Noto Sans Mono',
+      'Courier New',
+    ],
+  );
 }
 
 abstract final class AppTheme {
-  static ThemeData dark({bool dense = true}) => _base(
-        const ColorScheme(
-          brightness: Brightness.dark,
-          primary: AppColors.primary,
-          onPrimary: Colors.white,
-          secondary: AppColors.accent,
-          onSecondary: Colors.white,
-          error: AppColors.danger,
-          onError: Colors.white,
-          surface: AppColors.surface,
-          onSurface: AppColors.textHi,
-          onSurfaceVariant: AppColors.textMid,
-          surfaceContainerHighest: AppColors.surfaceHi,
-          surfaceContainerHigh: AppColors.surfaceHi,
-          surfaceContainer: AppColors.surface,
-          surfaceContainerLow: AppColors.surface,
-          surfaceContainerLowest: AppColors.bg,
-          outline: AppColors.strokeStrong,
-          outlineVariant: AppColors.stroke,
-          inverseSurface: AppColors.textHi,
-          onInverseSurface: AppColors.bg,
-          inversePrimary: AppColors.primaryDeep,
-          shadow: Colors.black,
-          scrim: Colors.black,
-        ),
-        background: AppColors.bg,
-        textLow: AppColors.textLow,
-        dense: dense,
-      );
+  static ThemeData dark({
+    ColorPalette palette = ColorPalette.saturn,
+    bool dense = true,
+  }) {
+    final hc = palette == ColorPalette.highContrast;
+    return _base(
+      hc ? _highContrastDark : _darkScheme(palette),
+      background: hc ? Colors.black : AppColors.bg,
+      textLow: hc ? const Color(0xFFBFBFBF) : AppColors.textLow,
+      divider: hc ? Colors.white : AppColors.stroke,
+      dense: dense,
+    );
+  }
 
-  static ThemeData light({bool dense = true}) => _base(
-        const ColorScheme(
-          brightness: Brightness.light,
-          primary: AppColors.primaryDeep,
-          onPrimary: Colors.white,
-          secondary: AppColors.accent,
-          onSecondary: Colors.white,
-          error: AppColors.dangerTextLight,
-          onError: Colors.white,
-          surface: AppColors.surfaceLight,
-          onSurface: AppColors.textHiLight,
-          onSurfaceVariant: AppColors.textMidLight,
-          surfaceContainerHighest: AppColors.surfaceHiLight,
-          surfaceContainerHigh: AppColors.surfaceHiLight,
-          surfaceContainer: AppColors.surfaceLight,
-          surfaceContainerLow: AppColors.surfaceLight,
-          surfaceContainerLowest: AppColors.bgLight,
-          outline: AppColors.strokeStrongLight,
-          outlineVariant: AppColors.strokeLight,
-          inverseSurface: AppColors.textHiLight,
-          onInverseSurface: AppColors.bgLight,
-          inversePrimary: AppColors.primary,
-          shadow: Colors.black,
-          scrim: Colors.black,
-        ),
-        background: AppColors.bgLight,
-        textLow: AppColors.textLowLight,
-        dense: dense,
-      );
+  static ThemeData light({
+    ColorPalette palette = ColorPalette.saturn,
+    bool dense = true,
+  }) {
+    final hc = palette == ColorPalette.highContrast;
+    return _base(
+      hc ? _highContrastLight : _lightScheme(palette),
+      background: hc ? Colors.white : AppColors.bgLight,
+      textLow: hc ? const Color(0xFF404040) : AppColors.textLowLight,
+      divider: hc ? Colors.black : AppColors.strokeLight,
+      dense: dense,
+    );
+  }
+
+  /// saturn·teal·amber·rose·slate는 주색만 다르다 (settings.md).
+  static ColorScheme _darkScheme(ColorPalette palette) => ColorScheme(
+    brightness: Brightness.dark,
+    primary: palette.primaryFor(Brightness.dark),
+    onPrimary: palette == ColorPalette.saturn ? Colors.white : AppColors.bg,
+    secondary: AppColors.accent,
+    onSecondary: Colors.white,
+    error: AppColors.danger,
+    onError: Colors.white,
+    surface: AppColors.surface,
+    onSurface: AppColors.textHi,
+    onSurfaceVariant: AppColors.textMid,
+    surfaceContainerHighest: AppColors.surfaceHi,
+    surfaceContainerHigh: AppColors.surfaceHi,
+    surfaceContainer: AppColors.surface,
+    surfaceContainerLow: AppColors.surface,
+    surfaceContainerLowest: AppColors.bg,
+    outline: AppColors.strokeStrong,
+    outlineVariant: AppColors.stroke,
+    inverseSurface: AppColors.textHi,
+    onInverseSurface: AppColors.bg,
+    inversePrimary: AppColors.primaryDeep,
+    shadow: Colors.black,
+    scrim: Colors.black,
+  );
+
+  static ColorScheme _lightScheme(ColorPalette palette) => ColorScheme(
+    brightness: Brightness.light,
+    primary: palette.primaryFor(Brightness.light),
+    onPrimary: Colors.white,
+    secondary: AppColors.accent,
+    onSecondary: Colors.white,
+    error: AppColors.dangerTextLight,
+    onError: Colors.white,
+    surface: AppColors.surfaceLight,
+    onSurface: AppColors.textHiLight,
+    onSurfaceVariant: AppColors.textMidLight,
+    surfaceContainerHighest: AppColors.surfaceHiLight,
+    surfaceContainerHigh: AppColors.surfaceHiLight,
+    surfaceContainer: AppColors.surfaceLight,
+    surfaceContainerLow: AppColors.surfaceLight,
+    surfaceContainerLowest: AppColors.bgLight,
+    outline: AppColors.strokeStrongLight,
+    outlineVariant: AppColors.strokeLight,
+    inverseSurface: AppColors.textHiLight,
+    onInverseSurface: AppColors.bgLight,
+    inversePrimary: AppColors.primary,
+    shadow: Colors.black,
+    scrim: Colors.black,
+  );
+
+  /// 고대비: 순흑/순백 배경·글자·테두리의 별도 ColorScheme (settings.md).
+  static final _highContrastDark = ColorScheme(
+    brightness: Brightness.dark,
+    primary: ColorPalette.highContrast.primaryFor(Brightness.dark),
+    onPrimary: Colors.black,
+    secondary: AppColors.accent,
+    onSecondary: Colors.white,
+    error: AppColors.danger,
+    onError: Colors.white,
+    surface: Colors.black,
+    onSurface: Colors.white,
+    onSurfaceVariant: const Color(0xFFBFBFBF),
+    surfaceContainerHighest: const Color(0xFF262626),
+    surfaceContainerHigh: const Color(0xFF262626),
+    surfaceContainer: Colors.black,
+    surfaceContainerLow: Colors.black,
+    surfaceContainerLowest: Colors.black,
+    outline: Colors.white,
+    outlineVariant: Colors.white,
+    inverseSurface: Colors.white,
+    onInverseSurface: Colors.black,
+    inversePrimary: ColorPalette.highContrast.primaryFor(Brightness.light),
+    shadow: Colors.black,
+    scrim: Colors.black,
+  );
+
+  static final _highContrastLight = ColorScheme(
+    brightness: Brightness.light,
+    primary: ColorPalette.highContrast.primaryFor(Brightness.light),
+    onPrimary: Colors.white,
+    secondary: AppColors.accent,
+    onSecondary: Colors.white,
+    error: AppColors.dangerTextLight,
+    onError: Colors.white,
+    surface: Colors.white,
+    onSurface: Colors.black,
+    onSurfaceVariant: const Color(0xFF404040),
+    surfaceContainerHighest: const Color(0xFFE0E0E0),
+    surfaceContainerHigh: const Color(0xFFE0E0E0),
+    surfaceContainer: Colors.white,
+    surfaceContainerLow: Colors.white,
+    surfaceContainerLowest: Colors.white,
+    outline: Colors.black,
+    outlineVariant: Colors.black,
+    inverseSurface: Colors.black,
+    onInverseSurface: Colors.white,
+    inversePrimary: ColorPalette.highContrast.primaryFor(Brightness.dark),
+    shadow: Colors.black,
+    scrim: Colors.black,
+  );
 
   /// [dense]: 데스크톱 밀도(본문 13)와 모바일 밀도(본문 15), ui-ux.md §4.
-  static ThemeData _base(ColorScheme scheme,
-      {required Color background, required Color textLow, required bool dense}) {
+  static ThemeData _base(
+    ColorScheme scheme, {
+    required Color background,
+    required Color textLow,
+    required Color divider,
+    required bool dense,
+  }) {
     final hi = scheme.onSurface;
     final mid = scheme.onSurfaceVariant;
     final body = dense ? 13.0 : 15.0;
     final small = dense ? 11.5 : 13.0;
-    const buttonShape = RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(AppRadius.button)));
+    const buttonShape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.all(Radius.circular(AppRadius.button)),
+    );
     final buttonSize = Size(0, dense ? 36 : 44);
-    final buttonText = TextStyle(fontFamily: AppFonts.family, fontSize: body, fontWeight: FontWeight.w700);
+    final buttonText = TextStyle(
+      fontFamily: AppFonts.family,
+      fontSize: body,
+      fontWeight: FontWeight.w700,
+    );
 
     return ThemeData(
       useMaterial3: true,
@@ -159,15 +272,39 @@ abstract final class AppTheme {
       canvasColor: background,
       splashFactory: InkSparkle.splashFactory,
       textTheme: TextTheme(
-        headlineMedium: TextStyle(fontSize: dense ? 20 : 34, fontWeight: FontWeight.w800, color: hi),
-        titleLarge: TextStyle(fontSize: dense ? 16 : 20, fontWeight: FontWeight.w700, color: hi),
-        titleMedium: TextStyle(fontSize: dense ? 14 : 17, fontWeight: FontWeight.w700, color: hi),
-        titleSmall: TextStyle(fontSize: body, fontWeight: FontWeight.w700, color: hi),
+        headlineMedium: TextStyle(
+          fontSize: dense ? 20 : 34,
+          fontWeight: FontWeight.w800,
+          color: hi,
+        ),
+        titleLarge: TextStyle(
+          fontSize: dense ? 16 : 20,
+          fontWeight: FontWeight.w700,
+          color: hi,
+        ),
+        titleMedium: TextStyle(
+          fontSize: dense ? 14 : 17,
+          fontWeight: FontWeight.w700,
+          color: hi,
+        ),
+        titleSmall: TextStyle(
+          fontSize: body,
+          fontWeight: FontWeight.w700,
+          color: hi,
+        ),
         bodyLarge: TextStyle(fontSize: body + 1, color: hi),
         bodyMedium: TextStyle(fontSize: body, color: hi),
         bodySmall: TextStyle(fontSize: small, color: mid),
-        labelLarge: TextStyle(fontSize: body, fontWeight: FontWeight.w700, color: hi),
-        labelMedium: TextStyle(fontSize: small, fontWeight: FontWeight.w500, color: mid),
+        labelLarge: TextStyle(
+          fontSize: body,
+          fontWeight: FontWeight.w700,
+          color: hi,
+        ),
+        labelMedium: TextStyle(
+          fontSize: small,
+          fontWeight: FontWeight.w500,
+          color: mid,
+        ),
         labelSmall: TextStyle(fontSize: small - 0.5, color: textLow),
       ),
       appBarTheme: AppBarTheme(
@@ -178,7 +315,12 @@ abstract final class AppTheme {
         // 앱 바 높이는 앱마다 따로 정하지 않고 여기서만 정한다 (ui-ux.md §4).
         toolbarHeight: dense ? 44 : kToolbarHeight,
         foregroundColor: hi,
-        titleTextStyle: TextStyle(fontFamily: AppFonts.family, fontSize: dense ? 16 : 20, fontWeight: FontWeight.w700, color: hi),
+        titleTextStyle: TextStyle(
+          fontFamily: AppFonts.family,
+          fontSize: dense ? 16 : 20,
+          fontWeight: FontWeight.w700,
+          color: hi,
+        ),
       ),
       cardTheme: CardThemeData(
         color: scheme.surface,
@@ -188,9 +330,15 @@ abstract final class AppTheme {
           side: BorderSide(color: scheme.outlineVariant),
         ),
       ),
-      dividerTheme: DividerThemeData(color: scheme.outlineVariant, thickness: 1, space: 1),
+      // Theme.of(context).dividerColor를 읽는 분할선도 같은 색이 되도록 둘 다 채운다.
+      dividerColor: divider,
+      dividerTheme: DividerThemeData(color: divider, thickness: 1, space: 1),
       filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(minimumSize: buttonSize, shape: buttonShape, textStyle: buttonText),
+        style: FilledButton.styleFrom(
+          minimumSize: buttonSize,
+          shape: buttonShape,
+          textStyle: buttonText,
+        ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
@@ -201,7 +349,11 @@ abstract final class AppTheme {
         ),
       ),
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(minimumSize: buttonSize, shape: buttonShape, textStyle: buttonText),
+        style: TextButton.styleFrom(
+          minimumSize: buttonSize,
+          shape: buttonShape,
+          textStyle: buttonText,
+        ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -222,7 +374,11 @@ abstract final class AppTheme {
       // 액션 글자색이 배경과 구분되도록 명시 (dove-zip의 "복사" 버튼 문제).
       snackBarTheme: SnackBarThemeData(
         backgroundColor: scheme.surfaceContainerHighest,
-        contentTextStyle: TextStyle(fontFamily: AppFonts.family, fontSize: body, color: hi),
+        contentTextStyle: TextStyle(
+          fontFamily: AppFonts.family,
+          fontSize: body,
+          color: hi,
+        ),
         actionTextColor: scheme.primary,
         behavior: SnackBarBehavior.floating,
       ),

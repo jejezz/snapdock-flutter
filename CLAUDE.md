@@ -39,7 +39,7 @@ conventions-v1 — jejezz/application-release-templates (`conventions/README.md`
 - 영상·GIF 녹화(macOS): 영역이나 창을 고른 뒤 툴바의 영상/GIF 단추. 최대 길이는 설정에서 3~60초(기본 10초, `CaptureConfig.maxRecordingSeconds`, `ScreenRecorder.swift`), 화면 위쪽 알약에 카운트다운과 정지 단추, 단축키를 한 번 더 눌러도 멈춘다. MP4는 H.264, GIF는 15fps로 녹화한 MP4를 10fps·가로 720px 이하로 변환한다. 파일은 임시 폴더에 두고 저장하면 저장 폴더로 복사한다.
 - 펼친 창 앱 바의 맨 왼쪽 단추가 "독으로 줄이기"이고(독 모드가 가장 쓸모 있어서), 캡처가 0개인 첫 화면에는 독 모드를 소개하는 짧은 설명과 같은 이름의 단추가 있다.
 - 펼친 창의 목록 위쪽 오른쪽에 "모두 지우기" 단추가 있다(확인 창을 한 번 거친다. 독과 목록에서만 지워지고 사용자 폴더에 저장한 파일은 그대로).
-- 설정 창(앱 바의 톱니): 녹화 길이, 이미지(PNG·GIF) 저장 폴더, 영상(MP4) 저장 폴더. `lib/settings/capture_settings.dart`가 shared_preferences에 저장하고 시작할 때와 바뀔 때마다 채널 `configure`로 네이티브에 보낸다. 폴더가 비어 있으면 기본값 ~/Pictures/Snapdock, ~/Movies/Snapdock.
+- 설정 창(앱 바의 톱니, 정보 아이콘 바로 왼쪽): 왼쪽 구역 목록 + 오른쪽 내용(application-release-templates `conventions/settings.md`). 화면(테마·색 구성 6종·글자 크기 `text_scale`)과 언어는 앱 바 팝업이 아니라 이 창에서 고른다(`AppSettings`, 키 `theme_mode`·`theme_palette`·`text_scale`·`app_locale`). 앱 고유 구역: 일반, 단축키, 녹화 길이, 이미지(PNG·GIF) 저장 폴더, 영상(MP4) 저장 폴더, 스크린샷 정보. `lib/settings/capture_settings.dart`가 shared_preferences에 저장하고 시작할 때와 바뀔 때마다 채널 `configure`로 네이티브에 보낸다. 폴더가 비어 있으면 기본값 ~/Pictures/Snapdock, ~/Movies/Snapdock.
 - 독 완성도(macOS에서 확인 완료): 썸네일을 창 밖으로 끌면 OS 드래그로 넘어가 PNG/MP4/GIF 파일이 나간다(flutter_drag_out v0.5.0). 캡처는 앱 지원 폴더 `captures/`에 파일로 두고 `index.json`에 적어 앱을 다시 켜도 돌아온다(최대 30개, 넘치면 오래된 것부터). 독은 접어서 알약(손잡이·카메라·개수)으로 둘 수 있고 접힘 상태도 기억한다. 캡처 순간 영역이 0.16초 번쩍이고 썸네일은 커지며 들어온다.
 - 아직 없는 것: 썸네일이 캡처 영역에서 독으로 날아가는 효과(지금은 독 안에서 커지며 나타나기만 한다), 단축키 설정, Windows 멀티 모니터 확인(`docs/WINDOWS.md`).
 - 네이티브: `macos/Runner/CaptureOverlay.swift`(오버레이), `CaptureChannel.swift`(채널). Flutter: `lib/capture/`, `lib/dock/`.

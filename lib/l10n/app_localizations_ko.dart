@@ -32,9 +32,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get themeMenuTooltip => '테마';
-
-  @override
   String get themeSystem => '시스템 설정 따르기';
 
   @override
@@ -42,9 +39,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get themeDark => '다크';
-
-  @override
-  String get languageMenuTooltip => '언어';
 
   @override
   String get languageSystem => '시스템 설정 따르기 / System';
@@ -249,6 +243,51 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get settingsTitle => '설정';
+
+  @override
+  String get settingsSectionDisplay => '화면';
+
+  @override
+  String get settingsSectionLanguage => '언어';
+
+  @override
+  String get settingsBrightness => '테마';
+
+  @override
+  String get settingsPalette => '색 구성';
+
+  @override
+  String get settingsPaletteSaturn => '새턴';
+
+  @override
+  String get settingsPaletteTeal => '틸';
+
+  @override
+  String get settingsPaletteAmber => '앰버';
+
+  @override
+  String get settingsPaletteRose => '로즈';
+
+  @override
+  String get settingsPaletteSlate => '슬레이트';
+
+  @override
+  String get settingsPaletteHighContrast => '고대비';
+
+  @override
+  String get settingsFontSize => '글자 크기';
+
+  @override
+  String get fontScaleSmall => '작게';
+
+  @override
+  String get fontScaleNormal => '보통';
+
+  @override
+  String get fontScaleLarge => '크게';
+
+  @override
+  String get settingsLanguage => '언어';
 
   @override
   String get settingsRecordingSection => '녹화';
