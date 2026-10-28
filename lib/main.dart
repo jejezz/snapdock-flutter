@@ -375,7 +375,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             tooltip: l10n.settingsTooltip,
-            icon: const Icon(Icons.settings_outlined),
+            icon: const Icon(Icons.settings_rounded),
             onPressed: () => showCaptureSettingsDialog(context, widget.captureSettings),
           ),
           IconButton(

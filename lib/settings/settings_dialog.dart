@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
@@ -53,43 +54,86 @@ class _SettingsDialogState extends State<_SettingsDialog> {
         _Section.metadata => l10n.settingsMetadataSection,
       };
 
+  IconData _icon(_Section section) => switch (section) {
+        _Section.display => Icons.palette_outlined,
+        _Section.language => Icons.language_rounded,
+        _Section.general => Icons.tune_rounded,
+        _Section.shortcuts => Icons.keyboard_outlined,
+        _Section.recording => Icons.videocam_outlined,
+        _Section.folders => Icons.folder_outlined,
+        _Section.metadata => Icons.info_outline_rounded,
+      };
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final sections = _sections;
+    // 설정 창은 앱 창보다 커질 수 없다 — 도킹한 좁은 창에서도 들어가도록 창 크기로 정한다 (settings.md).
+    final screen = MediaQuery.sizeOf(context);
+    final width = math.min(640.0, screen.width - 32);
+    final height = (screen.height - 32 - 150).clamp(160.0, 380.0);
+    final wide = width >= 560;
+
+    final content = SingleChildScrollView(
+      child: ListenableBuilder(
+        listenable: Listenable.merge([settings, AppSettingsScope.of(context)]),
+        builder: (context, _) => _body(context, l10n, theme, _selected),
+      ),
+    );
+
     return AlertDialog(
+      insetPadding: const EdgeInsets.all(16),
       title: Text(l10n.settingsTitle),
       content: SizedBox(
-        width: 640,
-        height: 380,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 140,
-              child: ListView(
+        width: width,
+        height: height,
+        child: wide
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (final section in sections)
-                    _SectionTile(
-                      title: _title(l10n, section),
-                      selected: section == _selected,
-                      onTap: () => setState(() => _selected = section),
+                  SizedBox(
+                    width: 160,
+                    child: ListView(
+                      children: [
+                        for (final section in sections)
+                          _SectionTile(
+                            title: _title(l10n, section),
+                            selected: section == _selected,
+                            onTap: () => setState(() => _selected = section),
+                          ),
+                      ],
                     ),
+                  ),
+                  const VerticalDivider(width: AppSpacing.xl),
+                  Expanded(child: content),
+                ],
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        for (final section in sections)
+                          Padding(
+                            padding: const EdgeInsets.only(right: AppSpacing.sm),
+                            child: ChoiceChip(
+                              showCheckmark: false,
+                              avatar: Icon(_icon(section), size: 18),
+                              label: Text(_title(l10n, section)),
+                              selected: section == _selected,
+                              onSelected: (_) => setState(() => _selected = section),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: AppSpacing.xl),
+                  Expanded(child: content),
                 ],
               ),
-            ),
-            const VerticalDivider(width: AppSpacing.xl),
-            Expanded(
-              child: SingleChildScrollView(
-                child: ListenableBuilder(
-                  listenable: Listenable.merge([settings, AppSettingsScope.of(context)]),
-                  builder: (context, _) => _body(context, l10n, theme, _selected),
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
       actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.commonClose))],
     );
