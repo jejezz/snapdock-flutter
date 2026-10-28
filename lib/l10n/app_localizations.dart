@@ -137,7 +137,7 @@ abstract class AppLocalizations {
   /// No description provided for @themeSystem.
   ///
   /// In ko, this message translates to:
-  /// **'시스템 설정 따르기'**
+  /// **'시스템'**
   String get themeSystem;
 
   /// No description provided for @themeLight.

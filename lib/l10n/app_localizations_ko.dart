@@ -32,7 +32,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get themeSystem => '시스템 설정 따르기';
+  String get themeSystem => '시스템';
 
   @override
   String get themeLight => '라이트';
