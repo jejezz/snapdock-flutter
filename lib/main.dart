@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'about/about_dialog.dart';
@@ -26,6 +27,7 @@ import 'dev/demo_hooks.dart';
 import 'dev/demo_runner.dart';
 import 'dock/dock_view.dart';
 import 'dock/dock_window.dart';
+import 'window/window_placement.dart';
 import 'l10n/app_localizations.dart';
 import 'settings/app_settings.dart';
 import 'settings/capture_settings.dart';
@@ -59,10 +61,21 @@ Future<void> main(List<String> args) async {
     await windowManager.ensureInitialized();
     await hotKeyManager.unregisterAll();
     // ui-ux.md §5: 최소 크기는 960×600 이하 (1366×768 노트북).
-    const options = WindowOptions(
-      size: Size(960, 640),
-      minimumSize: Size(960, 600),
-      center: true,
+    // Windows는 WindowPlacement가 일반 창의 크기·위치·최대화를 기억한다(window-placement.md).
+    // 독 모드에서는 저장하지 않는다 — 독에서 나올 때 일반 창 크기로 돌아와야 하기 때문이다.
+    const windowSize = Size(960, 640);
+    WindowPlacement? placement;
+    if (WindowPlacement.enabled) {
+      placement = WindowPlacement(
+        await SharedPreferences.getInstance(),
+        defaultSize: windowSize,
+        isDocked: () => WindowModeHooks.isDock?.call() ?? captureSettings.dockMode,
+      );
+    }
+    final options = WindowOptions(
+      size: windowSize,
+      minimumSize: const Size(960, 600),
+      center: placement == null,
       title: AppIdentity.displayName,
     );
     await windowManager.waitUntilReadyToShow(options, () async {
@@ -70,7 +83,10 @@ Future<void> main(List<String> args) async {
       if (captureSettings.dockMode) {
         final size = DockSize.values[captureSettings.dockSizeIndex.clamp(0, DockSize.values.length - 1)];
         await DockWindow.enter(DockWindow.sizeFor(count: captures.items.length, size: size, collapsed: captureSettings.dockCollapsed));
+      } else {
+        await placement?.placeInitially();
       }
+      placement?.attach();
       // 로그인으로 시작했고 트레이 숨김이 켜져 있으면 창 없이 트레이에서만 시작한다.
       if (startHidden) {
         await windowManager.setSkipTaskbar(true);
