@@ -33,7 +33,6 @@ import 'settings/app_settings.dart';
 import 'settings/capture_settings.dart';
 import 'settings/launch_at_startup.dart';
 import 'settings/settings_dialog.dart';
-import 'settings/settings_menus.dart';
 import 'theme/app_theme.dart';
 import 'tray/tray_controller.dart';
 import 'update/update_scope.dart';
@@ -246,17 +245,21 @@ class _AppState extends State<App> with WidgetsBindingObserver {
           navigatorKey: _navigatorKey,
           title: AppIdentity.displayName,
           debugShowCheckedModeBanner: false,
-          theme: AppTheme.light(dense: _isDesktop, palette: widget.settings.accentPalette),
-          darkTheme: AppTheme.dark(dense: _isDesktop, palette: widget.settings.accentPalette),
+          theme: AppTheme.light(palette: widget.settings.palette, dense: _isDesktop),
+          darkTheme: AppTheme.dark(palette: widget.settings.palette, dense: _isDesktop),
           themeMode: widget.settings.themeMode,
           locale: widget.settings.locale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           localeResolutionCallback: AppSettings.resolveLocale,
-          builder: (context, child) => AppMenuBar(
-            onAbout: _showAbout,
-            onCheckForUpdates: widget.updates == null ? null : _checkForUpdates,
-            child: child!,
+          // 글자 크기는 MediaQuery.textScaler로 적용한다 (fonts.md §6).
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(widget.settings.textScale)),
+            child: AppMenuBar(
+              onAbout: _showAbout,
+              onCheckForUpdates: widget.updates == null ? null : _checkForUpdates,
+              child: child!,
+            ),
           ),
           home: HomeScreen(onAbout: _showAbout, captures: _captures, captureSettings: widget.captureSettings),
         ),
@@ -388,11 +391,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             tooltip: l10n.settingsTooltip,
-            icon: const Icon(Icons.settings_outlined),
+            icon: const Icon(Icons.settings_rounded),
             onPressed: () => showCaptureSettingsDialog(context, widget.captureSettings),
           ),
-          const ThemeMenuButton(),
-          const LanguageMenuButton(),
           IconButton(
             tooltip: l10n.aboutTooltip,
             icon: const Icon(Icons.info_outline_rounded),

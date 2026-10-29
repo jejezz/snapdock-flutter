@@ -7,24 +7,24 @@ import 'package:snapdock/theme/app_theme.dart';
 
 void main() {
   test('고대비는 다크에서 순흑 배경·순백 글자·노란 주색이다', () {
-    final s = AppTheme.dark(palette: AccentPalette.highContrast).colorScheme;
+    final s = AppTheme.dark(palette: ColorPalette.highContrast).colorScheme;
     expect(s.surface, Colors.black);
     expect(s.onSurface, Colors.white);
     expect(s.outline, Colors.white);
-    expect(s.primary, AccentPalette.highContrast.darkPrimary);
+    expect(s.primary, ColorPalette.highContrast.primaryFor(Brightness.dark));
   });
 
   test('고대비는 라이트에서 순백 배경·순흑 글자·파란 주색이다', () {
-    final s = AppTheme.light(palette: AccentPalette.highContrast).colorScheme;
+    final s = AppTheme.light(palette: ColorPalette.highContrast).colorScheme;
     expect(s.surface, Colors.white);
     expect(s.onSurface, Colors.black);
     expect(s.outline, Colors.black);
-    expect(s.primary, AccentPalette.highContrast.lightPrimary);
+    expect(s.primary, ColorPalette.highContrast.primaryFor(Brightness.light));
   });
 
   test('고대비가 아닌 색 구성은 배경을 바꾸지 않는다', () {
     final base = AppTheme.dark().colorScheme.surface;
-    expect(AppTheme.dark(palette: AccentPalette.teal).colorScheme.surface, base);
-    expect(AppTheme.dark(palette: AccentPalette.highContrast).colorScheme.surface, isNot(base));
+    expect(AppTheme.dark(palette: ColorPalette.teal).colorScheme.surface, base);
+    expect(AppTheme.dark(palette: ColorPalette.highContrast).colorScheme.surface, isNot(base));
   });
 }

@@ -32,9 +32,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get themeMenuTooltip => 'Theme';
-
-  @override
   String get themeSystem => 'Follow System';
 
   @override
@@ -42,9 +39,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get themeDark => 'Dark';
-
-  @override
-  String get languageMenuTooltip => 'Language';
 
   @override
   String get languageSystem => 'System / 시스템 설정 따르기';
@@ -254,16 +248,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTitle => 'Settings';
 
   @override
-  String get settingsSectionAppearance => 'Appearance';
+  String get settingsSectionDisplay => 'Display';
 
   @override
-  String get settingsMode => 'Mode';
+  String get settingsSectionLanguage => 'Language';
 
   @override
-  String get settingsModeSystem => 'System';
+  String get settingsBrightness => 'Theme';
 
   @override
-  String get settingsPalette => 'Color scheme';
+  String get settingsPalette => 'Color theme';
 
   @override
   String get settingsPaletteSaturn => 'Saturn';
@@ -282,6 +276,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsPaletteHighContrast => 'High contrast';
+
+  @override
+  String get settingsFontSize => 'Text size';
+
+  @override
+  String get fontScaleSmall => 'Small';
+
+  @override
+  String get fontScaleNormal => 'Normal';
+
+  @override
+  String get fontScaleLarge => 'Large';
+
+  @override
+  String get settingsLanguage => 'Language';
 
   @override
   String get settingsRecordingSection => 'Recording';

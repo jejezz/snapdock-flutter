@@ -11,46 +11,91 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_theme.dart';
 
 class AppSettings extends ChangeNotifier {
-  AppSettings._(this._prefs, this._themeMode, this._locale, this._accentPalette);
+  AppSettings._(
+    this._prefs,
+    this._themeMode,
+    this._palette,
+    this._textScale,
+    this._locale,
+  );
 
   /// 저장 키 — 모든 앱 공통 (localization.md §5, settings-screen.md §4). 바꾸지 않는다.
   static const themeModeKey = 'theme_mode';
   static const localeKey = 'app_locale';
-  static const accentPaletteKey = 'accent_palette';
+  static const paletteKey = 'theme_palette';
+  static const textScaleKey = 'text_scale';
+
+  /// 글자 크기 선택지: 작게 / 보통 / 크게 (settings.md).
+  static const textScales = [0.9, 1.0, 1.15];
 
   final SharedPreferences _prefs;
   ThemeMode _themeMode;
+  ColorPalette _palette;
+  double _textScale;
   Locale? _locale;
-  AccentPalette _accentPalette;
 
   /// 저장된 값을 읽는다. [legacyKeys]는 예전 앱이 쓰던 키를 새 키로 한 번
   /// 옮긴다 — 키를 그냥 바꾸면 사용자 설정이 사라진다.
   /// 예: `AppSettings.load(legacyKeys: {'locale': AppSettings.localeKey})`
-  static Future<AppSettings> load({Map<String, String> legacyKeys = const {}}) async {
+  static Future<AppSettings> load({
+    Map<String, String> legacyKeys = const {},
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     for (final MapEntry(key: old, value: current) in legacyKeys.entries) {
       final value = prefs.getString(old);
-      if (value != null && !prefs.containsKey(current)) await prefs.setString(current, value);
+      if (value != null && !prefs.containsKey(current)) {
+        await prefs.setString(current, value);
+      }
       await prefs.remove(old);
     }
-    final mode = ThemeMode.values.asNameMap()[prefs.getString(themeModeKey)] ?? ThemeMode.system;
+    final mode =
+        ThemeMode.values.asNameMap()[prefs.getString(themeModeKey)] ??
+        ThemeMode.system;
+    final palette =
+        ColorPalette.values.asNameMap()[prefs.getString(paletteKey)] ??
+        ColorPalette.saturn;
+    final saved = prefs.getDouble(textScaleKey);
+    final scale = textScales.contains(saved) ? saved! : 1.0;
     final code = prefs.getString(localeKey);
-    final palette = AccentPalette.values.asNameMap()[prefs.getString(accentPaletteKey)] ?? AccentPalette.saturn;
-    return AppSettings._(prefs, mode, code == null ? null : Locale(code), palette);
+    return AppSettings._(
+      prefs,
+      mode,
+      palette,
+      scale,
+      code == null ? null : Locale(code),
+    );
   }
 
   ThemeMode get themeMode => _themeMode;
 
+  /// 주색 계열 — 밝기(themeMode)와 독립이다 (settings.md).
+  ColorPalette get palette => _palette;
+
+  /// 전체 글자 배율. MediaQuery.textScaler로 적용한다 (fonts.md §6).
+  double get textScale => _textScale;
+
   /// null = 시스템 언어를 따른다.
   Locale? get locale => _locale;
-
-  AccentPalette get accentPalette => _accentPalette;
 
   Future<void> setThemeMode(ThemeMode mode) async {
     if (mode == _themeMode) return;
     _themeMode = mode;
     notifyListeners();
     await _prefs.setString(themeModeKey, mode.name);
+  }
+
+  Future<void> setPalette(ColorPalette palette) async {
+    if (palette == _palette) return;
+    _palette = palette;
+    notifyListeners();
+    await _prefs.setString(paletteKey, palette.name);
+  }
+
+  Future<void> setTextScale(double scale) async {
+    if (scale == _textScale) return;
+    _textScale = scale;
+    notifyListeners();
+    await _prefs.setDouble(textScaleKey, scale);
   }
 
   Future<void> setLocale(Locale? locale) async {
@@ -64,13 +109,6 @@ class AppSettings extends ChangeNotifier {
     }
   }
 
-  Future<void> setAccentPalette(AccentPalette palette) async {
-    if (palette == _accentPalette) return;
-    _accentPalette = palette;
-    notifyListeners();
-    await _prefs.setString(accentPaletteKey, palette.name);
-  }
-
   /// MaterialApp.localeResolutionCallback — OS 언어가 한국어면 한국어,
   /// 그 밖의 모든 언어는 영어 (localization.md §3). 이 콜백이 없으면
   /// Flutter는 지원 목록의 첫 언어(ko)로 떨어진다.
@@ -80,8 +118,11 @@ class AppSettings extends ChangeNotifier {
 
 /// `AppSettingsScope.of(context)`로 설정을 읽고, 바뀌면 다시 그린다.
 class AppSettingsScope extends InheritedNotifier<AppSettings> {
-  const AppSettingsScope({super.key, required AppSettings settings, required super.child})
-      : super(notifier: settings);
+  const AppSettingsScope({
+    super.key,
+    required AppSettings settings,
+    required super.child,
+  }) : super(notifier: settings);
 
   static AppSettings of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<AppSettingsScope>()!.notifier!;
