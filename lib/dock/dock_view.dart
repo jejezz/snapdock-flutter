@@ -5,6 +5,7 @@ import '../capture/capture_controller.dart';
 import '../capture/capture_service.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
+import '../update/update_scope.dart';
 import 'capture_thumb.dart';
 import 'dock_window.dart';
 
@@ -50,9 +51,13 @@ class _DockViewState extends State<DockView> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.collapsed) return _UpdateBadgeOverlay(child: _buildPill(context));
+    return _UpdateBadgeOverlay(child: _buildExpanded(context));
+  }
+
+  Widget _buildExpanded(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
-    if (widget.collapsed) return _buildPill(context);
     return Scaffold(
       backgroundColor: scheme.surface,
       body: ListenableBuilder(
@@ -254,6 +259,46 @@ class _DockButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// 새 버전이 있으면 독(펼친 모양·알약 모두) 오른쪽 위에 점을 띄운다. 독은 창이 작아서 업데이트
+/// 다이얼로그를 그대로 띄우면 안 어울리므로(스크린샷 참고) 여기서는 뱃지로만 알리고, 실제 설치
+/// 흐름은 펼친 창의 정보 창 "업데이트 확인"에서 진행한다 (설정화면 공통 문제: 미니 독 강제 표시).
+class _UpdateBadgeOverlay extends StatelessWidget {
+  const _UpdateBadgeOverlay({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final service = UpdateScope.maybeOf(context);
+    if (service == null) return child;
+    return Stack(
+      children: [
+        child,
+        Positioned(
+          top: 2,
+          right: 2,
+          child: ValueListenableBuilder<bool>(
+            valueListenable: service.available,
+            builder: (context, available, _) => available
+                ? IgnorePointer(
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.error,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Theme.of(context).colorScheme.surface, width: 1),
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ),
+      ],
     );
   }
 }

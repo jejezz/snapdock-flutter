@@ -524,6 +524,66 @@ abstract class AppLocalizations {
   /// **'설정'**
   String get settingsTitle;
 
+  /// No description provided for @settingsSectionAppearance.
+  ///
+  /// In ko, this message translates to:
+  /// **'외형'**
+  String get settingsSectionAppearance;
+
+  /// No description provided for @settingsMode.
+  ///
+  /// In ko, this message translates to:
+  /// **'모드'**
+  String get settingsMode;
+
+  /// No description provided for @settingsModeSystem.
+  ///
+  /// In ko, this message translates to:
+  /// **'시스템'**
+  String get settingsModeSystem;
+
+  /// No description provided for @settingsPalette.
+  ///
+  /// In ko, this message translates to:
+  /// **'색 구성'**
+  String get settingsPalette;
+
+  /// No description provided for @settingsPaletteSaturn.
+  ///
+  /// In ko, this message translates to:
+  /// **'새턴'**
+  String get settingsPaletteSaturn;
+
+  /// No description provided for @settingsPaletteTeal.
+  ///
+  /// In ko, this message translates to:
+  /// **'청록'**
+  String get settingsPaletteTeal;
+
+  /// No description provided for @settingsPaletteAmber.
+  ///
+  /// In ko, this message translates to:
+  /// **'호박'**
+  String get settingsPaletteAmber;
+
+  /// No description provided for @settingsPaletteRose.
+  ///
+  /// In ko, this message translates to:
+  /// **'장미'**
+  String get settingsPaletteRose;
+
+  /// No description provided for @settingsPaletteSlate.
+  ///
+  /// In ko, this message translates to:
+  /// **'슬레이트'**
+  String get settingsPaletteSlate;
+
+  /// No description provided for @settingsPaletteHighContrast.
+  ///
+  /// In ko, this message translates to:
+  /// **'고대비'**
+  String get settingsPaletteHighContrast;
+
   /// No description provided for @settingsRecordingSection.
   ///
   /// In ko, this message translates to:

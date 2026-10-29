@@ -7,6 +7,7 @@ import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import 'capture_settings.dart';
 import 'launch_at_startup.dart';
+import 'settings_menus.dart';
 
 /// 캡처 설정 창: 녹화 길이와 이미지·영상 저장 위치.
 Future<void> showCaptureSettingsDialog(BuildContext context, CaptureSettings settings) {
@@ -37,6 +38,19 @@ class _SettingsDialog extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _SectionTitle(l10n.settingsSectionAppearance),
+              Text(l10n.settingsMode, style: theme.textTheme.bodySmall),
+              const SizedBox(height: AppSpacing.xs),
+              const ModeSegmentedButton(),
+              const SizedBox(height: AppSpacing.md),
+              Text(l10n.settingsPalette, style: theme.textTheme.bodySmall),
+              const SizedBox(height: AppSpacing.xs),
+              const AccentPaletteChips(),
+              const SizedBox(height: AppSpacing.md),
+              Text(l10n.languageMenuTooltip, style: theme.textTheme.bodySmall),
+              const SizedBox(height: AppSpacing.xs),
+              const LanguageSegmentedButton(),
+              const SizedBox(height: AppSpacing.xl),
               if (settings.launchAtStartup.isSupported) ...[
                 _SectionTitle(l10n.settingsGeneralSection),
                 _LaunchAtStartupRow(startup: settings.launchAtStartup),

@@ -95,6 +95,10 @@ class UpdateService {
   final AppUpdater updater;
   final UpdatePolicy policy;
 
+  /// 새 버전이 있다고 확인된 뒤 true. 사용자가 다이얼로그를 "나중에"로 닫아도 그대로 켜져 있다 —
+  /// 미니 독처럼 다이얼로그를 띄우기 애매한 화면에서 뱃지로 알리는 용도 (settings-screen.md 공통 문제).
+  final ValueNotifier<bool> available = ValueNotifier(false);
+
   /// `macos` · `windows` · `linux`. 설치 후 안내 문구를 고른다.
   final String os;
 
@@ -199,6 +203,7 @@ class UpdateService {
       case UpdateUnavailable(:final latestVersion, :final releaseUrl):
         await _showUnavailable(context, latestVersion, releaseUrl);
       case UpdateAvailable(:final info):
+        available.value = true;
         final choice = await showDialog<UpdateChoice>(
           context: context,
           barrierDismissible: false,
