@@ -158,13 +158,16 @@ class WindowPlacement with WindowListener {
         orElse: () => PlacementMath.primaryOf(displays)!,
       );
 
-      // 1단계: 목표 모니터 안으로 옮긴다.
       var dpr = windowManager.getDevicePixelRatio();
-      await windowManager.setPosition(Offset((target.left + 40) / dpr, (target.top + 40) / dpr));
-      await _waitForScale(display.scale);
+      if ((dpr - display.scale).abs() >= 0.01) {
+        // 목표 모니터가 지금과 배율이 다르면, 먼저 그 모니터 안으로만 옮겨 Windows가 배율을
+        // 바꿀 시간을 준 뒤에 최종 크기를 정한다 (한 번에 하면 옮기는 중에 바뀐 배율로 크기가
+        // 한 번 더 조정돼 창이 잠깐 엉뚱한 크기로 보인다).
+        await windowManager.setPosition(Offset((target.left + 40) / dpr, (target.top + 40) / dpr));
+        await _waitForScale(display.scale);
+        dpr = windowManager.getDevicePixelRatio();
+      }
 
-      // 2단계: 그 모니터의 배율로 최종 위치와 크기를 정한다.
-      dpr = windowManager.getDevicePixelRatio();
       await windowManager.setBounds(
         Rect.fromLTWH(target.left / dpr, target.top / dpr, target.width / dpr, target.height / dpr),
       );

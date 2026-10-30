@@ -29,9 +29,10 @@ bool FlutterWindow::OnCreate() {
   snapdock::RegisterCaptureChannel(flutter_controller_->engine()->messenger(), GetHandle());
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
-  flutter_controller_->engine()->SetNextFrameCallback([&]() {
-    this->Show();
-  });
+  // window_manager가 창 표시를 맡는다(main.dart: 배치가 끝나고 첫 프레임이 그려진 뒤에
+  // show()를 부른다). 여기서 첫 프레임에 바로 보여버리면, 아직 최종 모니터·배율로 옮기기 전의
+  // 창이 먼저 보였다가 자리 잡으며 커졌다 줄었다 하는 게 비친다 (window_manager README
+  // "Make sure you don't call Show() in windows/runner/flutter_window.cpp").
 
   // Flutter can complete the first frame before the "show window" callback is
   // registered. The following call ensures a frame is pending to ensure the
