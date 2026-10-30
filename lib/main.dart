@@ -56,44 +56,11 @@ Future<void> main(List<String> args) async {
 
   final startHidden = args.contains(LaunchAtStartup.hiddenFlag) && captureSettings.hideInTray && TrayController.isSupported;
 
+  Future<void> Function()? showWindow;
   if (_isDesktop) {
     await windowManager.ensureInitialized();
     await hotKeyManager.unregisterAll();
-    // ui-ux.md §5: 최소 크기는 960×600 이하 (1366×768 노트북).
-    // Windows는 WindowPlacement가 일반 창의 크기·위치·최대화를 기억한다(window-placement.md).
-    // 독 모드에서는 저장하지 않는다 — 독에서 나올 때 일반 창 크기로 돌아와야 하기 때문이다.
-    const windowSize = Size(960, 640);
-    WindowPlacement? placement;
-    if (WindowPlacement.enabled) {
-      placement = WindowPlacement(
-        await SharedPreferences.getInstance(),
-        defaultSize: windowSize,
-        isDocked: () => WindowModeHooks.isDock?.call() ?? captureSettings.dockMode,
-      );
-    }
-    final options = WindowOptions(
-      size: windowSize,
-      minimumSize: const Size(960, 600),
-      center: placement == null,
-      title: AppIdentity.displayName,
-    );
-    await windowManager.waitUntilReadyToShow(options, () async {
-      // 마지막에 독으로 끝냈다면 독으로 시작한다 (커서가 있는 모니터의 위쪽 가운데).
-      if (captureSettings.dockMode) {
-        final size = DockSize.values[captureSettings.dockSizeIndex.clamp(0, DockSize.values.length - 1)];
-        await DockWindow.enter(DockWindow.sizeFor(count: captures.items.length, size: size, collapsed: captureSettings.dockCollapsed));
-      } else {
-        await placement?.placeInitially();
-      }
-      placement?.attach();
-      // 로그인으로 시작했고 트레이 숨김이 켜져 있으면 창 없이 트레이에서만 시작한다.
-      if (startHidden) {
-        await windowManager.setSkipTaskbar(true);
-        return;
-      }
-      await windowManager.show();
-      await windowManager.focus();
-    });
+    showWindow = await _prepareWindow(captureSettings: captureSettings, captures: captures, startHidden: startHidden);
   }
 
   final settings = await AppSettings.load();
@@ -107,6 +74,68 @@ Future<void> main(List<String> args) async {
       child: App(settings: settings, updates: updates, captures: captures, captureSettings: captureSettings),
     ),
   );
+
+  if (showWindow != null) {
+    final show = showWindow;
+    WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(show()));
+  }
+}
+
+/// 다음 프레임이 그려질 때까지 기다린다.
+Future<void> _nextFrame() {
+  final completer = Completer<void>();
+  WidgetsBinding.instance.addPostFrameCallback((_) => completer.complete());
+  WidgetsBinding.instance.scheduleFrame();
+  return completer.future;
+}
+
+/// ui-ux.md §5: 최소 크기는 960×600 이하 (1366×768 노트북).
+/// Windows는 WindowPlacement가 일반 창의 크기·위치·최대화를 기억한다(window-placement.md).
+/// 독 모드에서는 저장하지 않는다 — 독에서 나올 때 일반 창 크기로 돌아와야 하기 때문이다.
+/// 배치가 끝나고 첫 프레임이 그려진 뒤에 show() 를 불러야 깜빡이지 않는다 (§5).
+Future<Future<void> Function()> _prepareWindow({
+  required CaptureSettings captureSettings,
+  required CaptureController captures,
+  required bool startHidden,
+}) async {
+  const windowSize = Size(960, 640);
+  WindowPlacement? placement;
+  if (WindowPlacement.enabled) {
+    placement = WindowPlacement(
+      await SharedPreferences.getInstance(),
+      defaultSize: windowSize,
+      isDocked: () => WindowModeHooks.isDock?.call() ?? captureSettings.dockMode,
+    );
+  }
+  final options = WindowOptions(
+    size: windowSize,
+    minimumSize: const Size(960, 600),
+    center: placement == null,
+    title: AppIdentity.displayName,
+  );
+  final placed = Completer<void>();
+  await windowManager.waitUntilReadyToShow(options, () async {
+    // 마지막에 독으로 끝냈다면 독으로 시작한다 (커서가 있는 모니터의 위쪽 가운데).
+    if (captureSettings.dockMode) {
+      final size = DockSize.values[captureSettings.dockSizeIndex.clamp(0, DockSize.values.length - 1)];
+      await DockWindow.enter(DockWindow.sizeFor(count: captures.items.length, size: size, collapsed: captureSettings.dockCollapsed));
+    } else {
+      await placement?.placeInitially();
+    }
+    placed.complete();
+  });
+  return () async {
+    await placed.future;
+    placement?.attach();
+    // 로그인으로 시작했고 트레이 숨김이 켜져 있으면 창 없이 트레이에서만 시작한다.
+    if (startHidden) {
+      await windowManager.setSkipTaskbar(true);
+      return;
+    }
+    await _nextFrame();
+    await windowManager.show();
+    await windowManager.focus();
+  };
 }
 
 class App extends StatefulWidget {
