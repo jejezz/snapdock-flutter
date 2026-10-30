@@ -35,6 +35,7 @@ class UpdateService {
     Future<void> Function(Uri url)? openUrl,
     this.startupDelay = const Duration(seconds: 5),
     this.isBusy,
+    this.onBeforeAvailableDialog,
     this.idlePollInterval = const Duration(seconds: 5),
     bool? browserDownload,
   })  : os = os ?? _currentOs(),
@@ -45,7 +46,7 @@ class UpdateService {
   /// 데스크톱이 아니거나 서버 주소가 비어 있으면(`--dart-define=UPDATE_SERVER=`) null —
   /// 그 앱은 업데이트 확인을 하지 않는다 (스토어 배포 모바일 앱 등).
   /// 현재 버전을 알 수 없을 때도 null 이다 — 업데이트 확인 때문에 앱이 시작하지 못하면 안 되므로 **절대 던지지 않는다.**
-  static Future<UpdateService?> create({bool Function()? isBusy}) async {
+  static Future<UpdateService?> create({bool Function()? isBusy, Future<void> Function()? onBeforeAvailableDialog}) async {
     if (AppIdentity.updateServerUrl.isEmpty) return null;
     if (!(Platform.isMacOS || Platform.isWindows || Platform.isLinux)) return null;
     try {
@@ -65,6 +66,7 @@ class UpdateService {
         ),
         policy: UpdatePolicy(PrefsUpdateStateStore(prefs)),
         isBusy: isBusy,
+        onBeforeAvailableDialog: onBeforeAvailableDialog,
       );
     } catch (e, stack) {
       debugPrint('Update checks disabled: $e\n$stack');
@@ -109,6 +111,10 @@ class UpdateService {
   /// true 인 동안은 업데이트를 알리지 않고(자동 확인은 끝날 때까지 미룬다), "지금 업데이트" 도 막는다 —
   /// 설치는 앱을 종료시키기 때문이다. null 이면 항상 한가하다고 본다.
   final bool Function()? isBusy;
+
+  /// 새 버전 알림 다이얼로그를 띄우기 직전에 부른다. 미니 독처럼 다이얼로그가 들어가지 않는 화면에서
+  /// 창을 먼저 펼치는 용도.
+  final Future<void> Function()? onBeforeAvailableDialog;
 
   /// 바쁜 동안 다시 확인하는 간격.
   final Duration idlePollInterval;
@@ -204,6 +210,8 @@ class UpdateService {
         await _showUnavailable(context, latestVersion, releaseUrl);
       case UpdateAvailable(:final info):
         available.value = true;
+        await onBeforeAvailableDialog?.call();
+        if (!context.mounted) return;
         final choice = await showDialog<UpdateChoice>(
           context: context,
           barrierDismissible: false,
