@@ -65,7 +65,10 @@ Future<void> main(List<String> args) async {
 
   final settings = await AppSettings.load();
   // 데스크톱이 아니거나 UPDATE_SERVER 가 비어 있으면 null — 업데이트 확인 없음.
-  final updates = await UpdateService.create();
+  // 독 모드에서 새 버전이 확인되면 알림 다이얼로그가 들어가도록 창을 먼저 펼친다.
+  final updates = await UpdateService.create(
+    onBeforeAvailableDialog: () async => WindowModeHooks.showAsWindow?.call(),
+  );
   // UpdateScope 는 MaterialApp 위에 둔다 — 정보 창이 이것을 읽어 "업데이트 확인" 단추를 붙인다.
   unawaited(runDemoIfRequested(captureService, captures));
   runApp(
