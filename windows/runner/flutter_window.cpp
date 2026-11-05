@@ -8,7 +8,13 @@
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
 
-FlutterWindow::~FlutterWindow() {}
+// window_manager의 destroy()는 PostQuitMessage(0)만 부른다. 그러면 메시지 루프가 먼저 끝나고
+// 창이 살아 있는 채로 이 소멸자가 돈다. 멤버(flutter_controller_)가 해제되는 도중 창 프로시저로
+// 메시지가 다시 들어와 반쯤 해제된 컨트롤러를 건드리면 flutter_windows.dll에서 크래시하고,
+// 그 덤프를 쓰는 동안 종료가 수십 초 걸렸다. 컨트롤러를 먼저 비우고(OnDestroy) 창을 닫는다.
+FlutterWindow::~FlutterWindow() {
+  Destroy();
+}
 
 bool FlutterWindow::OnCreate() {
   if (!Win32Window::OnCreate()) {
@@ -66,7 +72,9 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
 
   switch (message) {
     case WM_FONTCHANGE:
-      flutter_controller_->engine()->ReloadSystemFonts();
+      if (flutter_controller_) {
+        flutter_controller_->engine()->ReloadSystemFonts();
+      }
       break;
   }
 

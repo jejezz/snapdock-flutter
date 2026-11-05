@@ -207,7 +207,24 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       modifiers: [HotKeyModifier.alt, HotKeyModifier.shift],
       scope: HotKeyScope.system,
     );
-    await hotKeyManager.register(hotKey, keyDownHandler: (_) => _tray?.toggleDock());
+    await _registerWithRetry(hotKey, () => _tray?.toggleDock());
+  }
+
+  /// 다른 프로세스(업데이트 직후의 옛 인스턴스 등)가 잠깐 단축키를 쥐고 있으면 등록이 실패한다.
+  /// 조용히 죽지 않도록 몇 번 다시 시도하고, 끝내 안 되면 로그를 남긴다.
+  Future<void> _registerWithRetry(HotKey hotKey, VoidCallback onDown) async {
+    const attempts = 10;
+    for (var i = 1; i <= attempts; i++) {
+      try {
+        await hotKeyManager.register(hotKey, keyDownHandler: (_) => onDown());
+        return;
+      } catch (e) {
+        debugPrint('단축키 등록 실패 ($i/$attempts): ${hotKey.physicalKey.debugName} — $e');
+        if (i == attempts) return;
+        await Future<void>.delayed(const Duration(seconds: 3));
+        if (!mounted) return;
+      }
+    }
   }
 
   /// 전역 단축키 ⌥⇧S. 다른 앱을 쓰는 중에도 캡처를 시작한다.
@@ -217,10 +234,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       modifiers: [HotKeyModifier.alt, HotKeyModifier.shift],
       scope: HotKeyScope.system,
     );
-    await hotKeyManager.register(
-      hotKey,
-      keyDownHandler: (_) => _captures.capture(),
-    );
+    await _registerWithRetry(hotKey, _captures.capture);
   }
 
   @override
