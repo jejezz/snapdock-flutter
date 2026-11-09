@@ -57,6 +57,8 @@ conventions-v1 — jejezz/application-release-templates (`conventions/README.md`
 
 ## 남은 일
 
+- OCR 캡처(영역의 글자를 텍스트로 복사)를 만들기로 했다. 아직 구현 전이다. 결정 사항과 순서는 [`docs/OCR.md`](docs/OCR.md). 클립보드 텍스트를 자동으로 모아 독에 넣는 기능은 하지 않기로 했다(이유도 같은 문서에).
+
 - 앱 아이콘의 소품 글리프는 임시 그림(`assets/icon/source_glyph.png`). 고양이는 그대로 두고 Icons8 글리프로 교체한다.
 - 멀티 모니터 확인은 macOS 개발 환경에 모니터가 하나뿐이라 미뤄 두었다. Windows에서 확인한다:
   - ⌥⇧S가 커서가 있는 모니터에서 오버레이를 연다.
