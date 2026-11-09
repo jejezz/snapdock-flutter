@@ -2,8 +2,22 @@
 #include <flutter/flutter_view_controller.h>
 #include <windows.h>
 
+#include <iterator>
+
 #include "flutter_window.h"
 #include "utils.h"
+
+// DAYLIGHT_IMPELLER가 1, true, on, yes(대소문자 무관)이면 true.
+static bool ImpellerRequested() {
+  wchar_t value[16];
+  DWORD length = ::GetEnvironmentVariableW(L"DAYLIGHT_IMPELLER", value,
+                                           static_cast<DWORD>(std::size(value)));
+  if (length == 0 || length >= std::size(value)) {
+    return false;
+  }
+  return ::_wcsicmp(value, L"1") == 0 || ::_wcsicmp(value, L"true") == 0 ||
+         ::_wcsicmp(value, L"on") == 0 || ::_wcsicmp(value, L"yes") == 0;
+}
 
 int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
                       _In_ wchar_t *command_line, _In_ int show_command) {
@@ -35,6 +49,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   ::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
   flutter::DartProject project(L"data");
+
+  // Impeller는 DAYLIGHT_IMPELLER(1/true/on/yes)가 있을 때만 켠다. 모든 Daylight 앱이 같은 변수를 쓴다.
+  // 릴리스 엔진은 FLUTTER_ENGINE_SWITCHES를 무시하므로 프로젝트로 정한다.
+  project.set_impeller_switch(ImpellerRequested()
+                                  ? flutter::ImpellerSwitch::Enabled
+                                  : flutter::ImpellerSwitch::Disabled);
 
   std::vector<std::string> command_line_arguments =
       GetCommandLineArguments();

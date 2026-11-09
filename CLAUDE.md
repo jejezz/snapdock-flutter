@@ -32,6 +32,9 @@ conventions-v1 — jejezz/application-release-templates (`conventions/README.md`
 
 개발은 Windows에서 이어진다. 네이티브 캡처(채널 `art.zoomon.snapdock/capture`)를 `windows/runner/capture_*.cpp`, `screen_recorder.cpp`에 구현했다(멀티 모니터를 뺀 모든 기능을 Windows에서 확인함). 해야 할 일, 채널 규격, 확인 목록은 [`docs/WINDOWS.md`](docs/WINDOWS.md)에 있다.
 
+- **Windows는 기본으로 Impeller를 끈다(Skia).** 환경변수 `DAYLIGHT_IMPELLER=1`(또는 `true`/`on`/`yes`)이면 켠다. 모든 Daylight 앱이 같은 변수를 쓴다(`windows/runner/main.cpp`, `set_impeller_switch`).
+- **Windows 독 ↔ 창 전환은 창을 숨겼다가 새 화면이 그려진 뒤 보여 준다**(`_HomeScreenState._switchMode`, jacksbean-flutter와 같은 방식). 중간 모습이 보여 깜박이던 것을 막는다.
+
 ## 구현 현황
 
 - 되는 것(macOS): 전역 단축키 ⌥⇧S → 마우스가 있는 디스플레이를 얼린 화면 위에서 영역 선택(8개 앵커, 이동, 크기 배지, 사각형/원형 전환) → 복사 또는 저장(~/Pictures/Snapdock) → 독에 항목 추가. 독 모드는 항상 위 작은 창이며 썸네일 클릭 시 복사, 올리면 ✕, 우클릭 메뉴, S/M/L 크기 순환.

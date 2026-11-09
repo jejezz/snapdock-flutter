@@ -41,6 +41,9 @@ class _DockViewState extends State<DockView> {
   CaptureController get controller => widget.controller;
   DockSize get size => widget.size;
 
+  /// 손잡이 20 + 간격 6 + 단추 6개(28) — 독 Row가 필요로 하는 최소 폭.
+  static const _minRowWidth = 20.0 + 6 + 28 * 6;
+
   void _setHint(String? value) => _hint.value = value;
 
   @override
@@ -67,7 +70,18 @@ class _DockViewState extends State<DockView> {
           child: Column(
             children: [
               Expanded(
-                child: Row(
+                // 창 크기가 바뀌는 중간 프레임에서 잠깐 최소 폭보다 좁아져도 오버플로 오류가 나지 않게,
+                // 최소 폭을 보장하고 넘치는 부분은 자른다.
+                child: LayoutBuilder(
+                  builder: (context, box) => ClipRect(
+                    child: OverflowBox(
+                      alignment: Alignment.centerLeft,
+                      minWidth: 0,
+                      maxWidth: box.maxWidth < _minRowWidth ? _minRowWidth : box.maxWidth,
+                      child: SizedBox(
+                        width: box.maxWidth < _minRowWidth ? _minRowWidth : box.maxWidth,
+                        height: box.maxHeight,
+                        child: Row(
                   children: [
                     DragToMoveArea(
                       child: SizedBox(
@@ -141,6 +155,10 @@ class _DockViewState extends State<DockView> {
                       onPressed: widget.onExpand,
                     ),
                   ],
+                ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
               SizedBox(
