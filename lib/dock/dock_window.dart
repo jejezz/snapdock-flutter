@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:flutter/services.dart';
+
 import 'package:screen_retriever/screen_retriever.dart';
 
 import 'package:window_manager/window_manager.dart';
@@ -41,6 +43,8 @@ abstract final class DockWindow {
   /// 독 창과 화면 위쪽 사이의 간격.
   static const topMargin = 12.0;
 
+  static const _channel = MethodChannel('art.zoomon.snapdock/capture');
+
   static Future<void> enter(Size size) async {
     await windowManager.setMinimumSize(const Size(100, 40));
     await windowManager.setResizable(false);
@@ -51,7 +55,11 @@ abstract final class DockWindow {
     );
     // Windows는 제목 표시줄을 숨겨도 창틀(두꺼운 테두리)이 남아 안쪽 폭이 약 16px 줄어든다.
     // 완전히 테두리 없는 창으로 만들어야 요청한 크기가 그대로 안쪽 크기가 된다. exit에서 normal로 되돌린다.
-    if (Platform.isWindows) await windowManager.setAsFrameless();
+    if (Platform.isWindows) {
+      await windowManager.setAsFrameless();
+      // 프레임이 없으면 Windows 11 기본 둥근 모서리가 사라지므로 DWM에 다시 지정한다.
+      await _channel.invokeMethod('setRoundedCorners', {'rounded': true});
+    }
     await windowManager.setSize(size);
     await windowManager.setPosition(await _topCenter(size));
   }
@@ -89,6 +97,9 @@ abstract final class DockWindow {
   }
 
   static Future<void> exit() async {
+    if (Platform.isWindows) {
+      await _channel.invokeMethod('setRoundedCorners', {'rounded': true});
+    }
     await windowManager.setAlwaysOnTop(false);
     await windowManager.setTitleBarStyle(TitleBarStyle.normal);
     await windowManager.setResizable(true);
