@@ -372,19 +372,51 @@ class _HomeScreenState extends State<HomeScreen> {
     _lastCount = count;
   }
 
-  Future<void> _enterDock() async {
-    setState(() => _dock = true);
-    widget.captureSettings.setDockMode(true);
-    await DockWindow.enter(
-      DockWindow.sizeFor(count: _captures.items.length, size: _dockSize, collapsed: _collapsed),
-    );
+  bool _transitioning = false;
+
+  /// 창 모양을 바꾸는 동안 Windows에서는 창을 숨긴다. 안 숨기면 중간 모습(독 크기 창에 펼친 화면, 큰 창에
+  /// 독 화면)이 그대로 보여 깜박인다. 새 화면이 그려진 뒤에 다시 보여 준다(jacksbean-flutter와 같은 방식).
+  Future<void> _switchMode(bool dock, Future<void> Function() reshape) async {
+    if (_transitioning || dock == _dock) return;
+    _transitioning = true;
+    final hide = Platform.isWindows;
+    try {
+      widget.captureSettings.setDockMode(dock);
+      if (hide) await windowManager.hide();
+      if (!mounted) return;
+      // 독으로: 화면을 먼저 바꾼다(독 화면은 큰 창에서도 안전). 창으로: 창을 먼저 키운다 — 독 크기
+      // 창에 앱 바가 먼저 그려지면 가로 오버플로가 난다.
+      if (dock) {
+        setState(() => _dock = true);
+        await reshape();
+      } else {
+        await reshape();
+        if (!mounted) return;
+        setState(() => _dock = false);
+      }
+      if (hide) {
+        WidgetsBinding.instance.scheduleFrame();
+        await WidgetsBinding.instance.endOfFrame
+            .timeout(const Duration(milliseconds: 400), onTimeout: () {});
+      }
+    } finally {
+      // 숨은 채로 남으면 앱을 쓸 수 없으니 어떤 경우에도 다시 보여 준다.
+      if (hide) {
+        await windowManager.show();
+        if (!dock) await windowManager.focus();
+      }
+      _transitioning = false;
+    }
   }
 
-  Future<void> _exitDock() async {
-    setState(() => _dock = false);
-    widget.captureSettings.setDockMode(false);
-    await DockWindow.exit();
-  }
+  Future<void> _enterDock() => _switchMode(
+        true,
+        () => DockWindow.enter(
+          DockWindow.sizeFor(count: _captures.items.length, size: _dockSize, collapsed: _collapsed),
+        ),
+      );
+
+  Future<void> _exitDock() => _switchMode(false, DockWindow.exit);
 
   /// 독을 알약으로 접거나 다시 펼친다.
   void _toggleCollapsed() {

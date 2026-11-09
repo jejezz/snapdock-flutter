@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:screen_retriever/screen_retriever.dart';
@@ -48,6 +49,9 @@ abstract final class DockWindow {
       TitleBarStyle.hidden,
       windowButtonVisibility: false,
     );
+    // Windows는 제목 표시줄을 숨겨도 창틀(두꺼운 테두리)이 남아 안쪽 폭이 약 16px 줄어든다.
+    // 완전히 테두리 없는 창으로 만들어야 요청한 크기가 그대로 안쪽 크기가 된다. exit에서 normal로 되돌린다.
+    if (Platform.isWindows) await windowManager.setAsFrameless();
     await windowManager.setSize(size);
     await windowManager.setPosition(await _topCenter(size));
   }
