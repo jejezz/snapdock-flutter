@@ -5,6 +5,7 @@
 #include <flutter/standard_method_codec.h>
 #include <shellapi.h>
 #include <shlobj.h>
+#include <dwmapi.h>
 
 #include <memory>
 
@@ -223,6 +224,13 @@ class Handler {
       CaptureRegion(args, std::move(result));
     } else if (method == "stopRecording") {
       StopRecording();
+      result->Success();
+    } else if (method == "setRoundedCorners") {
+      // 프레임 없는 창(독)은 Windows 11이 모서리를 둥글게 하지 않으므로 직접 지정한다.
+      const EncodableValue* on = Find(args, "rounded");
+      const auto* b = on ? std::get_if<bool>(on) : nullptr;
+      int pref = (b && !*b) ? 1 /*DWMWCP_DONOTROUND*/ : 2 /*DWMWCP_ROUND*/;
+      DwmSetWindowAttribute(window_, 33 /*DWMWA_WINDOW_CORNER_PREFERENCE*/, &pref, sizeof(pref));
       result->Success();
     } else if (method == "configure") {
       Configure(args);
