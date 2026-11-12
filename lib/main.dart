@@ -38,6 +38,7 @@ import 'tray/tray_controller.dart';
 import 'update/update_scope.dart';
 import 'update/update_service.dart';
 import 'window/focus_tint.dart';
+import 'window/single_instance.dart';
 
 final bool _isDesktop =
     Platform.isMacOS || Platform.isWindows || Platform.isLinux;
@@ -174,6 +175,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       widget.captureSettings.addListener(_syncTray);
       widget.settings.addListener(_syncTray);
       _registerDockHotkey();
+      SingleInstance.listen();
       WidgetsBinding.instance.addPostFrameCallback((_) => _syncTray());
     }
   }

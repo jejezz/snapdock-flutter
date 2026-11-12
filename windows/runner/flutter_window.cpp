@@ -4,6 +4,7 @@
 
 #include "capture_channel.h"
 #include "flutter/generated_plugin_registrant.h"
+#include "single_instance.h"
 
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
@@ -33,6 +34,7 @@ bool FlutterWindow::OnCreate() {
   }
   RegisterPlugins(flutter_controller_->engine());
   snapdock::RegisterCaptureChannel(flutter_controller_->engine()->messenger(), GetHandle());
+  snapdock::MarkMainWindow(GetHandle(), flutter_controller_->engine()->messenger());
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   // window_manager가 창 표시를 맡는다(main.dart: 배치가 끝나고 첫 프레임이 그려진 뒤에
@@ -49,6 +51,7 @@ bool FlutterWindow::OnCreate() {
 }
 
 void FlutterWindow::OnDestroy() {
+  snapdock::UnmarkMainWindow(GetHandle());
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
   }
@@ -60,6 +63,12 @@ LRESULT
 FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
                               WPARAM const wparam,
                               LPARAM const lparam) noexcept {
+  // 작업 표시줄 등에서 두 번째로 실행한 프로세스가 보낸 "앞으로 나와라" 신호.
+  if (message == snapdock::ActivateInstanceMessage()) {
+    snapdock::NotifyActivated();
+    return 0;
+  }
+
   // Give Flutter, including plugins, an opportunity to handle window messages.
   if (flutter_controller_) {
     std::optional<LRESULT> result =
