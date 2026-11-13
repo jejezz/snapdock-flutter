@@ -78,6 +78,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateReleaseNotes => 'What\'s new';
 
   @override
+  String updateMoreChanges(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'and $count more',
+      one: 'and 1 more',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get updateViewReleaseNotes => 'Release notes';
+
+  @override
   String get updateNow => 'Update now';
 
   @override

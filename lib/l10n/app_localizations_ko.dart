@@ -77,6 +77,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get updateReleaseNotes => '변경 내용';
 
   @override
+  String updateMoreChanges(int count) {
+    return '외 $count건';
+  }
+
+  @override
+  String get updateViewReleaseNotes => '릴리스 노트 보기';
+
+  @override
   String get updateNow => '지금 업데이트';
 
   @override

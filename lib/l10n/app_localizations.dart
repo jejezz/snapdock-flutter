@@ -218,6 +218,18 @@ abstract class AppLocalizations {
   /// **'변경 내용'**
   String get updateReleaseNotes;
 
+  /// 업데이트 알림의 변경 항목 아래. 개수 제한으로 뺀 항목이 있을 때.
+  ///
+  /// In ko, this message translates to:
+  /// **'외 {count}건'**
+  String updateMoreChanges(int count);
+
+  /// No description provided for @updateViewReleaseNotes.
+  ///
+  /// In ko, this message translates to:
+  /// **'릴리스 노트 보기'**
+  String get updateViewReleaseNotes;
+
   /// No description provided for @updateNow.
   ///
   /// In ko, this message translates to:
