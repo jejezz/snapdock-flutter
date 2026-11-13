@@ -49,7 +49,8 @@ dependencies:
     git:
       url: https://github.com/jejezz/application-release-templates
       path: updater
-      ref: updater-v0.1.0
+      # updater-v0.2.0 상당 (태그 발행 전이라 커밋으로 고정)
+      ref: 5a21d66db05b2da98985b0611c2b985321005e5d
   hotkey_manager: ^0.2.3
   file_selector: ^1.1.0
   screen_retriever: ^0.2.2
