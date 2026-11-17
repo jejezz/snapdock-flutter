@@ -7,6 +7,8 @@ import 'package:screen_retriever/screen_retriever.dart';
 
 import 'package:window_manager/window_manager.dart';
 
+import '../window/window_placement.dart';
+
 /// 썸네일 크기. 목업의 S 32px, M 44px(기본), L 64px.
 enum DockSize {
   small(32),
@@ -18,6 +20,9 @@ enum DockSize {
 
   DockSize get next => DockSize.values[(index + 1) % DockSize.values.length];
 }
+
+/// 주 모니터에서 창을 놓는 자리.
+enum DockAnchor { topCenter, topRight, center, centerRight }
 
 /// 메인 창을 항상 위의 작은 독으로 바꿨다가 되돌린다.
 abstract final class DockWindow {
@@ -45,7 +50,7 @@ abstract final class DockWindow {
 
   static const _channel = MethodChannel('art.zoomon.snapdock/capture');
 
-  static Future<void> enter(Size size) async {
+  static Future<void> enter(Size size, {DockAnchor anchor = DockAnchor.topCenter}) async {
     await windowManager.setMinimumSize(const Size(100, 40));
     await windowManager.setResizable(false);
     await windowManager.setAlwaysOnTop(true);
@@ -60,29 +65,49 @@ abstract final class DockWindow {
       // 프레임이 없으면 Windows 11 기본 둥근 모서리가 사라지므로 DWM에 다시 지정한다.
       await _channel.invokeMethod('setRoundedCorners', {'rounded': true});
     }
-    await windowManager.setSize(size);
-    await windowManager.setPosition(await _topCenter(size));
+    lastAnchor = anchor;
+    await _placeOnPrimary(size, anchor);
   }
 
-  /// 커서가 있는 모니터의 위쪽 가운데. 메뉴 막대나 Dock을 뺀 영역 기준이다.
-  static Future<Offset> _topCenter(Size size) async {
-    final cursor = await screenRetriever.getCursorScreenPoint();
-    final displays = await screenRetriever.getAllDisplays();
-    Display? target;
-    for (final d in displays) {
-      final origin = d.visiblePosition ?? Offset.zero;
-      final area = d.visibleSize ?? d.size;
-      // 커서가 메뉴 막대 위에 있어도 그 모니터로 본다.
-      final rect = Rect.fromLTWH(origin.dx, origin.dy - 60, area.width, area.height + 120);
-      if (rect.contains(cursor)) {
-        target = d;
-        break;
-      }
+  /// 마지막으로 독을 놓은 자리. 다시 펼칠 때 창이 어디서 나타날지 정한다.
+  static DockAnchor lastAnchor = DockAnchor.topCenter;
+
+  /// 주 모니터 작업 영역(작업 표시줄·메뉴 막대 제외)의 [anchor] 자리에 논리 크기 [size]인 창을 놓는다.
+  /// Windows는 모니터마다 배율이 달라도 어긋나지 않게 물리 픽셀로 계산한다(`window_placement.dart` 참고).
+  static Future<void> _placeOnPrimary(Size size, DockAnchor anchor) async {
+    final primary = await screenRetriever.getPrimaryDisplay();
+    final DisplayArea area;
+    if (Platform.isWindows) {
+      area = DisplayArea.fromDisplay(primary, primary: true);
+    } else {
+      final pos = primary.visiblePosition ?? Offset.zero;
+      final vis = primary.visibleSize ?? primary.size;
+      area = DisplayArea(workArea: pos & vis, scale: 1, primary: true);
     }
-    target ??= await screenRetriever.getPrimaryDisplay();
-    final origin = target.visiblePosition ?? Offset.zero;
-    final area = target.visibleSize ?? target.size;
-    return Offset(origin.dx + (area.width - size.width) / 2, origin.dy + topMargin);
+    final work = area.workArea;
+    final s = area.scale;
+    final w = size.width * s, h = size.height * s;
+    final margin = topMargin * s;
+    final left = switch (anchor) {
+      DockAnchor.topCenter || DockAnchor.center => work.left + (work.width - w) / 2,
+      DockAnchor.topRight || DockAnchor.centerRight => work.right - w - margin,
+    };
+    final top = switch (anchor) {
+      DockAnchor.topCenter || DockAnchor.topRight => work.top + margin,
+      DockAnchor.center || DockAnchor.centerRight => work.top + (work.height - h) / 2,
+    };
+
+    var dpr = Platform.isWindows ? windowManager.getDevicePixelRatio() : 1.0;
+    if (Platform.isWindows && (dpr - s).abs() >= 0.01) {
+      // 창이 다른 배율의 모니터에 있으면 먼저 주 모니터 안으로 옮겨 배율이 바뀌길 기다린다.
+      await windowManager.setPosition(Offset((work.left + 40) / dpr, (work.top + 40) / dpr));
+      for (var i = 0; i < 12; i++) {
+        if ((windowManager.getDevicePixelRatio() - s).abs() < 0.01) break;
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      }
+      dpr = windowManager.getDevicePixelRatio();
+    }
+    await windowManager.setBounds(Rect.fromLTWH(left / dpr, top / dpr, w / dpr, h / dpr));
   }
 
   /// 썸네일이 늘고 줄 때 가로 가운데를 지킨다. 사용자가 독을 다른 곳으로 옮겼어도 그 자리에서 양옆으로 자란다.
@@ -103,8 +128,9 @@ abstract final class DockWindow {
     await windowManager.setAlwaysOnTop(false);
     await windowManager.setTitleBarStyle(TitleBarStyle.normal);
     await windowManager.setResizable(true);
+    // 최소 크기를 먼저 올리면 작은 독 창이 왼쪽 위 기준으로 960px까지 늘어나 오른쪽으로 쏠린다.
+    // 그래서 크기와 위치를 먼저 정하고 최소 크기는 마지막에 건다.
+    await _placeOnPrimary(_normalSize, DockAnchor.center);
     await windowManager.setMinimumSize(_normalMinimum);
-    await windowManager.setSize(_normalSize);
-    await windowManager.center();
   }
 }

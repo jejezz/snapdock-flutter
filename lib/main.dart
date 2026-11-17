@@ -411,10 +411,11 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _enterDock() => _switchMode(
+  Future<void> _enterDock({DockAnchor anchor = DockAnchor.topCenter}) => _switchMode(
         true,
         () => DockWindow.enter(
           DockWindow.sizeFor(count: _captures.items.length, size: _dockSize, collapsed: _collapsed),
+          anchor: anchor,
         ),
       );
 
