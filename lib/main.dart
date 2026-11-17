@@ -376,15 +376,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool _transitioning = false;
 
-  /// 창 모양을 바꾸는 동안 Windows에서는 창을 숨긴다. 안 숨기면 중간 모습(독 크기 창에 펼친 화면, 큰 창에
-  /// 독 화면)이 그대로 보여 깜박인다. 새 화면이 그려진 뒤에 다시 보여 준다(jacksbean-flutter와 같은 방식).
+  /// 창 모양을 바꾸는 동안 Windows에서는 창을 투명하게 둔다. 안 그러면 중간 모습(독 크기 창에 펼친 화면,
+  /// 큰 창에 독 화면)이 그대로 보여 깜박인다. 숨기면(hide/show) 다시 보일 때 옛 자리·옛 화면이 한 프레임
+  /// 비치므로, 보이는 채로 투명하게 해서 새 화면이 그려진 뒤에 불투명하게 되돌린다.
   Future<void> _switchMode(bool dock, Future<void> Function() reshape) async {
     if (_transitioning || dock == _dock) return;
     _transitioning = true;
     final hide = Platform.isWindows;
     try {
       widget.captureSettings.setDockMode(dock);
-      if (hide) await windowManager.hide();
+      if (hide) await windowManager.setOpacity(0);
       if (!mounted) return;
       // 독으로: 화면을 먼저 바꾼다(독 화면은 큰 창에서도 안전). 창으로: 창을 먼저 키운다 — 독 크기
       // 창에 앱 바가 먼저 그려지면 가로 오버플로가 난다.
@@ -397,14 +398,19 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() => _dock = false);
       }
       if (hide) {
-        WidgetsBinding.instance.scheduleFrame();
-        await WidgetsBinding.instance.endOfFrame
-            .timeout(const Duration(milliseconds: 400), onTimeout: () {});
+        // 투명한 창은 보이는 창이라 Flutter가 계속 그린다. 새 크기로 두 프레임이 그려지고 DWM이 합성할
+        // 시간을 준 뒤에 불투명하게 되돌린다.
+        for (var i = 0; i < 2; i++) {
+          WidgetsBinding.instance.scheduleFrame();
+          await WidgetsBinding.instance.endOfFrame
+              .timeout(const Duration(milliseconds: 400), onTimeout: () {});
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 60));
       }
     } finally {
       // 숨은 채로 남으면 앱을 쓸 수 없으니 어떤 경우에도 다시 보여 준다.
       if (hide) {
-        await windowManager.show();
+        await windowManager.setOpacity(1);
         if (!dock) await windowManager.focus();
       }
       _transitioning = false;
