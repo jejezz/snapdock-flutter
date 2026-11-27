@@ -12,7 +12,7 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:ui' show AppExitType;
+import 'dart:ui' show AppExitResponse, AppExitType;
 
 import 'package:app_updater/app_updater.dart';
 import 'package:flutter/material.dart';
@@ -46,7 +46,14 @@ class UpdateService {
   /// 데스크톱이 아니거나 서버 주소가 비어 있으면(`--dart-define=UPDATE_SERVER=`) null —
   /// 그 앱은 업데이트 확인을 하지 않는다 (스토어 배포 모바일 앱 등).
   /// 현재 버전을 알 수 없을 때도 null 이다 — 업데이트 확인 때문에 앱이 시작하지 못하면 안 되므로 **절대 던지지 않는다.**
-  static Future<UpdateService?> create({bool Function()? isBusy, Future<void> Function()? onBeforeAvailableDialog}) async {
+  ///
+  /// [quitApp]: 설치하려고 앱을 끝낼 때 부른다. 없으면 [_exitApp]. 트레이 상주 앱은 트레이 아이콘을 걷고 백그라운드
+  /// 일을 멈춘 뒤 `exit(0)` 하는 자기 종료 함수를 넘긴다 — 안 그러면 끝난 뒤 트레이에 유령 아이콘이 남는다.
+  static Future<UpdateService?> create({
+    bool Function()? isBusy,
+    Future<void> Function()? onBeforeAvailableDialog,
+    Future<void> Function()? quitApp,
+  }) async {
     if (AppIdentity.updateServerUrl.isEmpty) return null;
     if (!(Platform.isMacOS || Platform.isWindows || Platform.isLinux)) return null;
     try {
@@ -67,6 +74,7 @@ class UpdateService {
         policy: UpdatePolicy(PrefsUpdateStateStore(prefs)),
         isBusy: isBusy,
         onBeforeAvailableDialog: onBeforeAvailableDialog,
+        quitApp: quitApp,
       );
     } catch (e, stack) {
       debugPrint('Update checks disabled: $e\n$stack');
@@ -139,9 +147,18 @@ class UpdateService {
   /// macOS 샌드박스 앱이면 true. 테스트에서 값을 바꿀 수 있다.
   final bool browserDownload;
 
-  // 정식 종료: 앱의 WidgetsBindingObserver.didRequestAppExit 를 거친 뒤 끝난다. 종료 직전에 정리할 것(로그 flush,
-  // 저장)이 있는 앱은 거기서 하면 된다. `exit(0)` 은 그것을 건너뛰므로 쓰지 않는다.
+  // 설치를 위한 종료. 어느 OS 든 먼저 앱의 WidgetsBindingObserver.didRequestAppExit 를 거친다 — 종료 직전에 정리할
+  // 것(로그 flush, 저장, 저장 안 한 편집 묻기)은 거기에 둔다. 거기서 cancel 이면 끝내지 않는다.
+  //
+  // Windows: exitApplication 은 PostQuitMessage 만 부르고 엔진이 스스로 내려가는 동안 창이 멈춘 채 9–13초 남았다
+  // (daylight-broom 측정, Dart 쪽 정리는 80ms). 그래서 정리를 직접 부른 뒤 프로세스를 바로 끝낸다.
+  // macOS · Linux 는 그런 지연이 없어 정식 종료를 그대로 쓴다.
   static Future<void> _exitApp() async {
+    if (Platform.isWindows) {
+      final response = await ServicesBinding.instance.handleRequestAppExit();
+      if (response == AppExitResponse.exit) exit(0);
+      return;
+    }
     await ServicesBinding.instance.exitApplication(AppExitType.cancelable);
   }
 

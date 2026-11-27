@@ -69,6 +69,8 @@ Future<void> main(List<String> args) async {
   // 독 모드에서 새 버전이 확인되면 알림 다이얼로그가 들어가도록 창을 먼저 펼친다.
   final updates = await UpdateService.create(
     onBeforeAvailableDialog: () async => WindowModeHooks.showAsWindow?.call(),
+    // Windows 에서 설치하려고 끝낼 때도 트레이 메뉴의 "종료" 와 같은 빠른 종료를 쓴다. macOS 는 정식 종료를 그대로 쓴다.
+    quitApp: Platform.isWindows ? TrayController.quitApp : null,
   );
   // UpdateScope 는 MaterialApp 위에 둔다 — 정보 창이 이것을 읽어 "업데이트 확인" 단추를 붙인다.
   unawaited(runDemoIfRequested(captureService, captures));
