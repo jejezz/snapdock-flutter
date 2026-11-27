@@ -138,8 +138,24 @@ class TrayController with TrayListener, WindowListener {
       case 'hide':
         await hideWindow();
       case 'quit':
-        await windowManager.setPreventClose(false);
-        await windowManager.destroy();
+        await quitApp();
     }
+  }
+
+  /// 앱을 끝낸다 (트레이 메뉴의 "종료", 업데이트 설치).
+  ///
+  /// Windows: windowManager.destroy() 로 엔진이 스스로 내려가게 두면 창이 멈춘 채 9–13초 남는다 (daylight-broom 측정).
+  /// 트레이 아이콘을 먼저 걷고(안 그러면 유령 아이콘이 남는다) 프로세스를 바로 끝낸다. 전역 단축키는 프로세스가
+  /// 끝나면 OS 가 풀어 준다. macOS 는 지금까지처럼 창을 닫아 끝낸다.
+  static Future<void> quitApp() async {
+    if (Platform.isWindows) {
+      try {
+        await trayManager.destroy();
+      } finally {
+        exit(0);
+      }
+    }
+    await windowManager.setPreventClose(false);
+    await windowManager.destroy();
   }
 }
